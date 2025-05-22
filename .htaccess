@@ -1,0 +1,10 @@
+Options All -Indexes
+
+RewriteEngine On
+
+# Excluir archivos y directorios reales de las reglas de reescritura
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Regla para URLs amigables
+RewriteRule ^([-a-zA-Z0-9]+)/?$ index.php?ruta=$1 [L,QSA]

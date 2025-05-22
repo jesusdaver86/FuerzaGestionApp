@@ -1,0 +1,116 @@
+[21-May-2025 08:19:54 Etc/GMT+4] PHP Parse error:  syntax error, unexpected string content ";" in /home/heavkfwj/test.heavytruckidentity.com/developer/modelos/conexion.php on line 28
+[21-May-2025 08:20:09 Etc/GMT+4] PHP Parse error:  syntax error, unexpected string content ";" in /home/heavkfwj/test.heavytruckidentity.com/developer/modelos/conexion.php on line 28
+[21-May-2025 08:23:07 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 08:24:17 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/pasajeros.php(110): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#4 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 08:25:24 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:09:48 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:10:06 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/pasajeros.php(110): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#4 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:10:28 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:10:56 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:11:21 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:11:51 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/pasajeros.php(110): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#4 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 09:11:58 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 11:26:08 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 12:25:52 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138
+[21-May-2025 18:52:55 Etc/GMT+4] PHP Fatal error:  Uncaught Error: Call to undefined method ModeloPasajeros::mdlMostrarPasajeros() in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php:138
+Stack trace:
+#0 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio/cajas-superiores.php(15): ControladorPasajeros::ctrMostrarPasajeros()
+#1 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/modulos/inicio.php(31): include('/home/heavkfwj/...')
+#2 /home/heavkfwj/test.heavytruckidentity.com/developer/vistas/plantilla.php(93): include('/home/heavkfwj/...')
+#3 /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/plantilla.controlador.php(7): include('/home/heavkfwj/...')
+#4 /home/heavkfwj/test.heavytruckidentity.com/developer/index.php(30): ControladorPlantilla::ctrPlantilla()
+#5 {main}
+  thrown in /home/heavkfwj/test.heavytruckidentity.com/developer/controladores/pasajeros.controlador.php on line 138

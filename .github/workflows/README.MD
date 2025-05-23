@@ -53,3 +53,34 @@
         Pusheará los cambios a la misma rama
 
 Si hay problemas con el push directo, automáticamente creará un Pull Request con los cambios.
+
+
+🔍 Mejoras clave:
+
+    Compatibilidad con ZIP divididos:
+
+        Detecta automáticamente archivos .z01, .z02, etc.
+
+        Usa zip -s 0 para combinar las partes antes de extraer
+
+    Manejo más robusto:
+
+        Paso de preparación para identificar archivos ZIP
+
+        Lógica condicional para ZIP normales vs divididos
+
+        Mejor limpieza de archivos temporales
+
+    Optimización del flujo:
+
+        Solo ejecuta pasos de extracción si hay ZIPs válidos
+
+        Solo hace commit si hay cambios reales
+
+        Mantiene tu estructura de mensajes y configuración familiar
+
+    Mensajes más informativos:
+
+        Indica claramente cuando detecta archivos divididos
+
+        Muestra qué archivo principal está procesando

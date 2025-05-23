@@ -1,4 +1,4 @@
-name: xml File
+name: Unzip File
 
 on:
   push:
@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: xml file
+      - name: Unzip file
         run: |
-          xml '*.zip' -d .
+          unzip '*.zip' -d .
           rm *.zip
       - name: Commit unzipped files
         run: |

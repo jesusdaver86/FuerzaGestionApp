@@ -1,43 +1,71 @@
-name: Unzip and Commit Files
+name: Unzip and Commit Files (Including Split ZIPs)
 
 on:
   push:
     paths:
       - '*.zip'
+      - '*.z??'  # Captura archivos .z01, .z02, etc.
 
 jobs:
   unzip-and-commit:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Permiso esencial para hacer push
+      contents: write
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Necesario para operaciones git posteriores
+          fetch-depth: 0
 
-      - name: Unzip files
+      - name: Prepare environment
+        id: prep
         run: |
-          # Busca y descomprime todos los ZIPs
-          for zipfile in *.zip; do
-            unzip "$zipfile" -d .
-            rm -f "$zipfile"
-          done
+          # Encuentra el archivo ZIP principal (el que no es .zXX)
+          MAIN_ZIP=$(ls *.zip 2>/dev/null | grep -v '.z[0-9][0-9]$' | head -n 1)
+          
+          if [ -z "$MAIN_ZIP" ]; then
+            echo "No se encontró archivo ZIP principal"
+            echo "::set-output name=has_zips::false"
+          else
+            echo "Archivo ZIP principal: $MAIN_ZIP"
+            echo "::set-output name=main_zip::$MAIN_ZIP"
+            echo "::set-output name=has_zips::true"
+          fi
+
+      - name: Process ZIP files
+        if: steps.prep.outputs.has_zips == 'true'
+        run: |
+          MAIN_ZIP="${{ steps.prep.outputs.main_zip }}"
+          BASE_NAME="${MAIN_ZIP%.*}"
+          
+          # Verifica si hay archivos divididos
+          if ls ${BASE_NAME}.z?? 2>/dev/null; then
+            echo "Detectados archivos ZIP divididos - combinando..."
+            zip -s 0 "$MAIN_ZIP" --out "combined_$MAIN_ZIP"
+            unzip "combined_$MAIN_ZIP" -d .
+            rm -f "combined_$MAIN_ZIP" ${BASE_NAME}.z??
+          else
+            echo "Procesando ZIP normal..."
+            unzip "$MAIN_ZIP" -d .
+          fi
+          
+          # Limpieza final
+          rm -f "$MAIN_ZIP"
 
       - name: Commit and push changes
+        if: steps.prep.outputs.has_zips == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token automático
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Configuración de Git
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          
-          # Asegura que estamos en la rama correcta
           git checkout ${{ github.ref_name }}
           
-          # Añade, commitea y pushea los cambios
           git add .
-          git status
-          git commit -m "Auto-commit: Archivos descomprimidos [skip ci]" || echo "No hay cambios para commitear"
-          git push origin ${{ github.ref_name }}
+          if ! git diff-index --quiet HEAD --; then
+            git commit -m "Auto-commit: Archivos descomprimidos [skip ci]"
+            git push origin ${{ github.ref_name }}
+          else
+            echo "No hay cambios para commitear"
+          fi

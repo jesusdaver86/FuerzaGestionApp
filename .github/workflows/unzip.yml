@@ -1,4 +1,4 @@
-name: Unzip File
+name: Unzip and Commit Files
 
 on:
   push:
@@ -6,18 +6,38 @@ on:
       - '*.zip'
 
 jobs:
-  unzip:
+  unzip-and-commit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Permiso esencial para hacer push
+    
     steps:
-      - uses: actions/checkout@v3
-      - name: Unzip file
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Necesario para operaciones git posteriores
+
+      - name: Unzip files
         run: |
-          unzip '*.zip' -d .
-          rm *.zip
-      - name: Commit unzipped files
+          # Busca y descomprime todos los ZIPs
+          for zipfile in *.zip; do
+            unzip "$zipfile" -d .
+            rm -f "$zipfile"
+          done
+
+      - name: Commit and push changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Token automático
         run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
+          # Configuración de Git
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Asegura que estamos en la rama correcta
+          git checkout ${{ github.ref_name }}
+          
+          # Añade, commitea y pushea los cambios
           git add .
-          git commit -m "Descomprimir ZIP automáticamente" || echo "No changes to commit"
-          git push
+          git status
+          git commit -m "Auto-commit: Archivos descomprimidos [skip ci]" || echo "No hay cambios para commitear"
+          git push origin ${{ github.ref_name }}

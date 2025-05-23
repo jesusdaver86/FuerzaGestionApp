@@ -1,0 +1,23 @@
+name: xml File
+
+on:
+  push:
+    paths:
+      - '*.zip'
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: xml file
+        run: |
+          xml '*.zip' -d .
+          rm *.zip
+      - name: Commit unzipped files
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+          git add .
+          git commit -m "Descomprimir ZIP automáticamente" || echo "No changes to commit"
+          git push

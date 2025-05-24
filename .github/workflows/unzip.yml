@@ -26,17 +26,17 @@ jobs:
           
           if [ -z "$MAIN_ZIP" ]; then
             echo "No se encontró archivo ZIP principal"
-            echo "::set-output name=has_zips::false"
+            echo "has_zips=false" >> $GITHUB_ENV
           else
             echo "Archivo ZIP principal: $MAIN_ZIP"
-            echo "::set-output name=main_zip::$MAIN_ZIP"
-            echo "::set-output name=has_zips::true"
+            echo "main_zip=$MAIN_ZIP" >> $GITHUB_ENV
+            echo "has_zips=true" >> $GITHUB_ENV
           fi
 
       - name: Process ZIP files
-        if: steps.prep.outputs.has_zips == 'true'
+        if: env.has_zips == 'true'
         run: |
-          MAIN_ZIP="${{ steps.prep.outputs.main_zip }}"
+          MAIN_ZIP="${{ env.main_zip }}"
           BASE_NAME="${MAIN_ZIP%.*}"
           
           # Verifica si hay archivos divididos
@@ -54,7 +54,7 @@ jobs:
           rm -f "$MAIN_ZIP"
 
       - name: Commit and push changes
-        if: steps.prep.outputs.has_zips == 'true'
+        if: env.has_zips == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -66,7 +66,6 @@ jobs:
           if ! git diff-index --quiet HEAD --; then
             git commit -m "Auto-commit: Archivos descomprimidos [skip ci]"
             git push origin ${{ github.ref_name }}
-        
           else
             echo "No hay cambios para commitear"
           fi

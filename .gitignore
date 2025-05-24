@@ -1,0 +1,19 @@
+# Composer
+vendor/
+composer.lock
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+*~

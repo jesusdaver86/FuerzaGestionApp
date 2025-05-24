@@ -1,7 +1,15 @@
 <?php
-session_start();
+// session_start(); // Removed global session_start
 
 class ControladorUsuarios{
+
+    private static $TABLE_NAME = "usuarios";
+    private static $SESSION_KEY_LOGIN = "iniciarSesion";
+    private static $SESSION_KEY_ID = "id";
+    private static $SESSION_KEY_NOMBRE = "nombre";
+    private static $SESSION_KEY_USUARIO = "usuario";
+    private static $SESSION_KEY_FOTO = "foto";
+    private static $SESSION_KEY_PERFIL = "perfil";
 
     /*=============================================
     MÉTODO PARA SANITIZAR ENTRADAS
@@ -14,474 +22,307 @@ class ControladorUsuarios{
     MÉTODO PARA INICIAR SESIÓN SEGURA
     =============================================*/
     private static function iniciarSesionSegura(){
-        if(session_status() !== PHP_SESSION_ACTIVE){
+        if(session_status() !== PHP_SESSION_ACTIVE){ // Check if session is not already active
             session_start();
         }
-        // Regenerar ID de sesión para evitar fijación
-        session_regenerate_id(true);
+        session_regenerate_id(true); // Regenerate ID to prevent session fixation
+    }
+
+    /*=============================================
+    MÉTODOS DE VALIDACIÓN PRIVADOS
+    =============================================*/
+    private static function _validarNombreUsuario($nombre){
+        return preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $nombre);
+    }
+
+    private static function _validarCredencialUsuario($credencial){
+        return preg_match('/^[a-zA-Z0-9]+$/', $credencial);
+    }
+
+    /*=============================================
+    MÉTODO PRIVADO PARA PROCESAR IMAGEN DE USUARIO
+    =============================================*/
+    private static function _procesarImagenUsuario($fileData, $usuarioNombre, $rutaFotoActual = ""){
+        if (isset($fileData["tmp_name"]) && $fileData["tmp_name"] != "") {
+            if ($fileData["size"] > 2 * 1024 * 1024) {
+                throw new Exception("La imagen no debe pesar más de 2MB");
+            }
+            list($ancho, $alto) = getimagesize($fileData["tmp_name"]);
+            $nuevoAncho = 500;
+            $nuevoAlto = 500;
+            $directorio = "vistas/img/usuarios/" . $usuarioNombre;
+            if (!is_dir($directorio)) {
+                if(!mkdir($directorio, 0755, true)){
+                    throw new Exception("Error al crear el directorio para la imagen.");
+                }
+            }
+            if (!empty($rutaFotoActual) && file_exists($rutaFotoActual)) {
+                unlink($rutaFotoActual);
+            }
+            $mimeType = mime_content_type($fileData["tmp_name"]);
+            if (!in_array($mimeType, ["image/jpeg", "image/png"])) {
+                throw new Exception("Formato de imagen no permitido. Solo JPEG y PNG.");
+            }
+            $aleatorio = mt_rand(100, 999);
+            $nuevaRuta = $directorio . "/" . $aleatorio . ($mimeType == "image/jpeg" ? ".jpg" : ".png");
+            if ($mimeType == "image/jpeg") {
+                $origen = imagecreatefromjpeg($fileData["tmp_name"]);
+            } else {
+                $origen = imagecreatefrompng($fileData["tmp_name"]);
+            }
+            if(!$origen){ throw new Exception("Error al crear la imagen desde el archivo subido."); }
+            $destino = imagecreatetruecolor($nuevoAncho, $nuevoAlto);
+            if(!$destino){ throw new Exception("Error al crear el lienzo para la nueva imagen."); }
+            imagecopyresampled($destino, $origen, 0, 0, 0, 0, $nuevoAncho, $nuevoAlto, $ancho, $alto);
+            if ($mimeType == "image/jpeg") {
+                if(!imagejpeg($destino, $nuevaRuta)){ throw new Exception("Error al guardar la imagen JPEG."); }
+            } else {
+                if(!imagepng($destino, $nuevaRuta)){ throw new Exception("Error al guardar la imagen PNG."); }
+            }
+            imagedestroy($origen);
+            imagedestroy($destino);
+            return $nuevaRuta;
+        }
+        return $rutaFotoActual;
+    }
+
+    /*=============================================
+    MÉTODO HELPER PARA RESPUESTAS JSON
+    =============================================*/
+    private static function _jsonResponse($success, $message, $data = [], $redirect = ""){
+        if (headers_sent()) { 
+            error_log("ControladorUsuarios::_jsonResponse - Headers already sent. Cannot set Content-Type.");
+        } else {
+            header('Content-Type: application/json');
+        }
+        
+        $response = [
+            'success' => (bool)$success,
+            'message' => $message
+        ];
+        if(!empty($data)){ 
+            $response['data'] = $data;
+        }
+        if(!empty($redirect)){ 
+            $response['redirect'] = $redirect;
+        }
+        echo json_encode($response);
+        exit();
     }
 
     public static function ctrIngresoUsuario(){
-    if(isset($_POST["ingUsuario"]) && isset($_POST["ingPassword"])){
+        if(!isset($_POST[self::SESSION_KEY_USUARIO]) || !isset($_POST["ingPassword"])){
+            self::_jsonResponse(false, "Usuario y contraseña son requeridos.");
+        }
+
         try {
-            // Sanitizar entradas (mantén tu código actual)
-            $usuario = self::sanitizarEntrada($_POST["ingUsuario"]);
-            $password = $_POST["ingPassword"];
-            
-            // Validaciones (mantén tu código actual)
-            if(!preg_match('/^[a-zA-Z0-9]+$/', $usuario)){
+            $usuario = self::sanitizarEntrada($_POST[self::SESSION_KEY_USUARIO]);
+            $password = $_POST["ingPassword"]; 
+
+            if(!self::_validarCredencialUsuario($usuario)){
                 throw new Exception("Formato de usuario inválido");
             }
 
-            $tabla = "usuarios";
-            $item = "usuario";
-            $valor = $usuario;
-
-            $respuesta = ModeloUsuarios::mdlMostrarUsuarios($tabla, $item, $valor);
-
-            if(!$respuesta){
-                throw new Exception("Usuario no encontrado");
-            }
-
-            if(!isset($respuesta["password"])){
-                throw new Exception("Error interno, contraseña no encontrada");
+            $respuesta = ModeloUsuarios::mdlMostrarUsuarios(self::$TABLE_NAME, "usuario", $usuario);
+            if(!$respuesta || !isset($respuesta["password"])){
+                throw new Exception("Usuario o contraseña incorrectos"); 
             }
 
             if(!password_verify($password, $respuesta["password"])){
-                /*throw new Exception("Contraseña incorrecta");*/
-                 throw new Exception("shake");
+                throw new Exception("Usuario o contraseña incorrectos");
             }
 
             if($respuesta["estado"] != 1){
                 throw new Exception("El usuario aún no está activado");
             }
 
-            // Iniciar sesión segura
-            self::iniciarSesionSegura();
+            self::iniciarSesionSegura(); // Call before setting session variables
+            $_SESSION[self::$SESSION_KEY_LOGIN] = "ok";
+            $_SESSION[self::$SESSION_KEY_ID] = $respuesta[self::$SESSION_KEY_ID];
+            $_SESSION[self::$SESSION_KEY_NOMBRE] = $respuesta[self::$SESSION_KEY_NOMBRE];
+            $_SESSION[self::$SESSION_KEY_USUARIO] = $respuesta[self::$SESSION_KEY_USUARIO];
+            $_SESSION[self::$SESSION_KEY_FOTO] = $respuesta[self::$SESSION_KEY_FOTO];
+            $_SESSION[self::$SESSION_KEY_PERFIL] = $respuesta[self::$SESSION_KEY_PERFIL];
 
-            $_SESSION["iniciarSesion"] = "ok";
-            $_SESSION["id"] = $respuesta["id"];
-            $_SESSION["nombre"] = $respuesta["nombre"];
-            $_SESSION["usuario"] = $respuesta["usuario"];
-            $_SESSION["foto"] = $respuesta["foto"];
-            $_SESSION["perfil"] = $respuesta["perfil"];
-
-            // Actualizar último login (mantén tu código actual)
-            date_default_timezone_set("Etc/GMT+4");
+            date_default_timezone_set("Etc/GMT+4"); 
             $fechaActual = date('Y-m-d H:i:s');
-
-            $item1 = "ultimo_login";
-            $valor1 = $fechaActual;
-            $item2 = "id";
-            $valor2 = $respuesta["id"];
-
-            $ultimoLogin = ModeloUsuarios::mdlActualizarUsuario($tabla, $item1, $valor1, $item2, $valor2);
+            $ultimoLogin = ModeloUsuarios::mdlActualizarUsuario(
+                self::$TABLE_NAME, 
+                "ultimo_login", 
+                $fechaActual, 
+                self::$SESSION_KEY_ID, 
+                $respuesta[self::$SESSION_KEY_ID]
+            );
 
             if($ultimoLogin != "ok"){
-                error_log("Error al actualizar último login");
+                error_log("Error al actualizar último login para usuario ID: " . $respuesta[self::$SESSION_KEY_ID]);
             }
 
-            // Respuesta para AJAX o tradicional
-            if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                // Respuesta JSON para AJAX
-                echo json_encode([
-                    'success' => true,
-                    'message' => 'Login exitoso',
-                    'redirect' => 'inicio' // Agregamos redirección en la respuesta
-                ]);
-            } else {
-                // Redirección tradicional
-                header("Location: inicio");
-                exit();
-            }
+            self::_jsonResponse(true, "Login exitoso", ["redirect" => "inicio"]);
 
         } catch (Exception $e) {
-            if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
-                // Error en formato JSON para AJAX
-                echo json_encode([
-                    'success' => false,
-                    'message' => $e->getMessage()
-                ]);
-            } else {
-                // Error tradicional
-                echo '<br><div class="alert alert-danger">'.htmlspecialchars($e->getMessage()).'</div>';
-            }
+            self::_jsonResponse(false, $e->getMessage());
         }
     }
-}
-    /*=============================================
-    MÉTODO CREAR USUARIO
-    =============================================*/
+
     public static function ctrCrearUsuario(){
+        if (empty($_POST["nuevoNombre"]) || empty($_POST["nuevoUsuario"]) || empty($_POST["nuevoPassword"]) || !isset($_POST["nuevoPerfil"])) {
+            self::_jsonResponse(false, "Nombre, usuario y contraseña son requeridos. Perfil también es necesario.");
+        }
 
-        if(isset($_POST["nuevoUsuario"]) && isset($_POST["nuevoPassword"]) && isset($_POST["nuevoNombre"])){
-
-            // Sanitizar entradas
+        try {
             $nombre = self::sanitizarEntrada($_POST["nuevoNombre"]);
             $usuario = self::sanitizarEntrada($_POST["nuevoUsuario"]);
-            $password = $_POST["nuevoPassword"]; // No sanitizar para que funcione password_hash
+            $password = $_POST["nuevoPassword"]; 
+            $perfil = self::sanitizarEntrada($_POST["nuevoPerfil"]);
 
-            // Validar entradas con preg_match
-            if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $nombre) &&
-               preg_match('/^[a-zA-Z0-9]+$/', $usuario) &&
-               preg_match('/^[a-zA-Z0-9]+$/', $password)){
-
-                $ruta = "";
-
-                if(isset($_FILES["nuevaFoto"]["tmp_name"]) && $_FILES["nuevaFoto"]["tmp_name"] != ""){
-
-                    list($ancho, $alto) = getimagesize($_FILES["nuevaFoto"]["tmp_name"]);
-
-                    // Restricción tamaño máximo, ejemplo 2MB
-                    if($_FILES["nuevaFoto"]["size"] > 2 * 1024 * 1024){
-                        echo '<script>
-                            swal({
-                                type: "error",
-                                title: "La imagen no debe pesar más de 2MB",
-                                showConfirmButton: true,
-                                confirmButtonText: "Cerrar"
-                            });
-                        </script>';
-                        return;
-                    }
-
-                    $nuevoAncho = 500;
-                    $nuevoAlto = 500;
-
-                    $directorio = "vistas/img/usuarios/".$usuario;
-
-                    if(!is_dir($directorio)){
-                        mkdir($directorio, 0755, true);
-                    }
-
-                    $mimeType = mime_content_type($_FILES["nuevaFoto"]["tmp_name"]);
-
-                    if(in_array($mimeType, ["image/jpeg", "image/png"])){
-
-                        $aleatorio = mt_rand(100,999);
-
-                        if($mimeType == "image/jpeg"){
-                            $ruta = "vistas/img/usuarios/".$usuario."/".$aleatorio.".jpg";
-                            $origen = imagecreatefromjpeg($_FILES["nuevaFoto"]["tmp_name"]);
-                        }else{
-                            $ruta = "vistas/img/usuarios/".$usuario."/".$aleatorio.".png";
-                            $origen = imagecreatefrompng($_FILES["nuevaFoto"]["tmp_name"]);
-                        }
-
-                        $destino = imagecreatetruecolor($nuevoAncho, $nuevoAlto);
-
-                        imagecopyresampled($destino, $origen, 0, 0, 0, 0, $nuevoAncho, $nuevoAlto, $ancho, $alto);
-
-                        if($mimeType == "image/jpeg"){
-                            imagejpeg($destino, $ruta);
-                        }else{
-                            imagepng($destino, $ruta);
-                        }
-
-                    }else{
-                        echo '<script>
-                            swal({
-                                type: "error",
-                                title: "Formato de imagen no permitido. Solo JPEG y PNG.",
-                                showConfirmButton: true,
-                                confirmButtonText: "Cerrar"
-                            });
-                        </script>';
-                        return;
-                    }
-
-                }
-
-                $tabla = "usuarios";
-
-                // Hashear contraseña con password_hash
-                $encriptar = password_hash($password, PASSWORD_DEFAULT);
-
-                $datos = array(
-                    "nombre" => $nombre,
-                    "usuario" => $usuario,
-                    "password" => $encriptar,
-                    "perfil" => self::sanitizarEntrada($_POST["nuevoPerfil"]),
-                    "foto" => $ruta
-                );
-
-                $respuesta = ModeloUsuarios::mdlIngresarUsuario($tabla, $datos);
-
-                if($respuesta == "ok"){
-
-                    echo '<script>
-                        swal({
-                            type: "success",
-                            title: "¡El usuario ha sido guardado correctamente!",
-                            showConfirmButton: true,
-                            confirmButtonText: "Cerrar"
-                        }).then(function(result){
-                            if(result.value){
-                                window.location = "usuarios";
-                            }
-                        });
-                    </script>';
-
-                }else{
-                    echo '<script>
-                        swal({
-                            type: "error",
-                            title: "Error al guardar el usuario. Intente más tarde.",
-                            showConfirmButton: true,
-                            confirmButtonText: "Cerrar"
-                        });
-                    </script>';
-                }
-
-            }else{
-                echo '<script>
-                    swal({
-                        type: "error",
-                        title: "¡El usuario, nombre o contraseña tienen formato inválido!",
-                        showConfirmButton: true,
-                        confirmButtonText: "Cerrar"
-                    }).then(function(result){
-                        if(result.value){
-                            window.location = "usuarios";
-                        }
-                    });
-                </script>';
+            if (!self::_validarNombreUsuario($nombre)) {
+                throw new Exception("Formato de nombre inválido.");
+            }
+            if (!self::_validarCredencialUsuario($usuario)) {
+                throw new Exception("Formato de usuario inválido.");
+            }
+            if (!self::_validarCredencialUsuario($password)) {
+                throw new Exception("Formato de contraseña inválido."); 
             }
 
-        }
+            $rutaFoto = ""; 
+            if (isset($_FILES["nuevaFoto"]["tmp_name"]) && $_FILES["nuevaFoto"]["tmp_name"] != "") {
+                $rutaFoto = self::_procesarImagenUsuario($_FILES["nuevaFoto"], $usuario); 
+            }
 
+            $encriptar = password_hash($password, PASSWORD_DEFAULT);
+
+            $datos = [
+                "nombre" => $nombre,
+                "usuario" => $usuario,
+                "password" => $encriptar,
+                "perfil" => $perfil,
+                "foto" => $rutaFoto
+            ];
+
+            $respuesta = ModeloUsuarios::mdlIngresarUsuario(self::$TABLE_NAME, $datos);
+
+            if ($respuesta != "ok") {
+                throw new Exception("Error al guardar el usuario. Intente más tarde."); 
+            }
+
+            self::_jsonResponse(true, "¡El usuario ha sido guardado correctamente!", [], "usuarios");
+
+        } catch (Exception $e) {
+            self::_jsonResponse(false, $e->getMessage());
+        }
     }
 
-    /*=============================================
-    MÉTODO MOSTRAR USUARIOS
-    =============================================*/
     public static function ctrMostrarUsuarios($item, $valor){
-
-        $tabla = "usuarios";
-
+        $tabla = self::$TABLE_NAME;
         $respuesta = ModeloUsuarios::mdlMostrarUsuarios($tabla, $item, $valor);
-
         return $respuesta;
     }
 
-    /*=============================================
-    MÉTODO EDITAR USUARIO
-    =============================================*/
     public static function ctrEditarUsuario(){
+        if (!isset($_POST["idUsuario"]) || !isset($_POST["editarNombre"]) || !isset($_POST["editarUsuario"]) || !isset($_POST["editarPerfil"]) || !isset($_POST["passwordActual"]) || !isset($_POST["fotoActual"])) {
+            self::_jsonResponse(false, "Datos de usuario incompletos para la edición.");
+        }
 
-        if(isset($_POST["editarUsuario"])){
-
+        try {
+            $idUsuario = self::sanitizarEntrada($_POST["idUsuario"]);
             $nombre = self::sanitizarEntrada($_POST["editarNombre"]);
+            $usuario = self::sanitizarEntrada($_POST["editarUsuario"]); 
+            $perfil = self::sanitizarEntrada($_POST["editarPerfil"]);
+            $passwordActual = self::sanitizarEntrada($_POST["passwordActual"]); 
+            $rutaFotoActual = self::sanitizarEntrada($_POST["fotoActual"]);
 
-            if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $nombre)){
-
-                $ruta = self::sanitizarEntrada($_POST["fotoActual"]);
-
-                if(isset($_FILES["editarFoto"]["tmp_name"]) && $_FILES["editarFoto"]["tmp_name"] != ""){
-
-                    list($ancho, $alto) = getimagesize($_FILES["editarFoto"]["tmp_name"]);
-
-                    if($_FILES["editarFoto"]["size"] > 2 * 1024 * 1024){
-                        echo '<script>
-                            swal({
-                                type: "error",
-                                title: "La imagen no debe pesar más de 2MB",
-                                showConfirmButton: true,
-                                confirmButtonText: "Cerrar"
-                            });
-                        </script>';
-                        return;
-                    }
-
-                    $nuevoAncho = 500;
-                    $nuevoAlto = 500;
-
-                    $directorio = "vistas/img/usuarios/".self::sanitizarEntrada($_POST["editarUsuario"]);
-
-                    if(!is_dir($directorio)){
-                        mkdir($directorio, 0755, true);
-                    }
-
-                    // Eliminar foto anterior si existe
-                    if(!empty($ruta) && file_exists($ruta)){
-                        unlink($ruta);
-                    }
-
-                    $mimeType = mime_content_type($_FILES["editarFoto"]["tmp_name"]);
-
-                    if(in_array($mimeType, ["image/jpeg", "image/png"])){
-
-                        $aleatorio = mt_rand(100,999);
-
-                        if($mimeType == "image/jpeg"){
-                            $ruta = "vistas/img/usuarios/".self::sanitizarEntrada($_POST["editarUsuario"])."/".$aleatorio.".jpg";
-                            $origen = imagecreatefromjpeg($_FILES["editarFoto"]["tmp_name"]);
-                        }else{
-                            $ruta = "vistas/img/usuarios/".self::sanitizarEntrada($_POST["editarUsuario"])."/".$aleatorio.".png";
-                            $origen = imagecreatefrompng($_FILES["editarFoto"]["tmp_name"]);
-                        }
-
-                        $destino = imagecreatetruecolor($nuevoAncho, $nuevoAlto);
-
-                        imagecopyresampled($destino, $origen, 0, 0, 0, 0, $nuevoAncho, $nuevoAlto, $ancho, $alto);
-
-                        if($mimeType == "image/jpeg"){
-                            imagejpeg($destino, $ruta);
-                        }else{
-                            imagepng($destino, $ruta);
-                        }
-
-                    }else{
-                        echo '<script>
-                            swal({
-                                type: "error",
-                                title: "Formato de imagen no permitido. Solo JPEG y PNG.",
-                                showConfirmButton: true,
-                                confirmButtonText: "Cerrar"
-                            });
-                        </script>';
-                        return;
-                    }
-
-                }
-
-                $tabla = "usuarios";
-
-                // Manejo contraseña
-                if(isset($_POST["editarPassword"]) && $_POST["editarPassword"] != ""){
-
-                    $passwordNueva = $_POST["editarPassword"];
-
-                    if(preg_match('/^[a-zA-Z0-9]+$/', $passwordNueva)){
-
-                        // Hashear nueva contraseña
-                        $encriptar = password_hash($passwordNueva, PASSWORD_DEFAULT);
-
-                    }else{
-                        echo'<script>
-                            swal({
-                                type: "error",
-                                title: "¡La contraseña no puede ir vacía o llevar caracteres especiales!",
-                                showConfirmButton: true,
-                                confirmButtonText: "Cerrar"
-                            }).then(function(result) {
-                                if (result.value) {
-                                    window.location = "usuarios";
-                                }
-                            })
-                        </script>';
-                        return;
-                    }
-
-                }else{
-                    // Mantener la contraseña actual (base de datos)
-                    $encriptar = self::sanitizarEntrada($_POST["passwordActual"]);
-                }
-
-                $datos = array(
-                    "nombre" => $nombre,
-                    "usuario" => self::sanitizarEntrada($_POST["editarUsuario"]),
-                    "password" => $encriptar,
-                    "perfil" => self::sanitizarEntrada($_POST["editarPerfil"]),
-                    "foto" => $ruta
-                );
-
-                $respuesta = ModeloUsuarios::mdlEditarUsuario($tabla, $datos);
-
-                if($respuesta == "ok"){
-
-                    echo'<script>
-                        swal({
-                            type: "success",
-                            title: "El usuario ha sido editado correctamente",
-                            showConfirmButton: true,
-                            confirmButtonText: "Cerrar"
-                        }).then(function(result) {
-                            if (result.value) {
-                                window.location = "usuarios";
-                            }
-                        })
-                    </script>';
-
-                }else{
-                    echo'<script>
-                        swal({
-                            type: "error",
-                            title: "Error al editar el usuario. Intente más tarde",
-                            showConfirmButton: true,
-                            confirmButtonText: "Cerrar"
-                        });
-                    </script>';
-                }
-            }else{
-                echo'<script>
-                    swal({
-                        type: "error",
-                        title: "¡El nombre no puede ir vacío o llevar caracteres especiales!",
-                        showConfirmButton: true,
-                        confirmButtonText: "Cerrar"
-                    }).then(function(result) {
-                        if (result.value) {
-                            window.location = "usuarios";
-                        }
-                    })
-                </script>';
+            if (!self::_validarNombreUsuario($nombre)) {
+                throw new Exception("¡El nombre no puede ir vacío o llevar caracteres especiales!");
             }
+
+            $rutaFoto = $rutaFotoActual; 
+            if (isset($_FILES["editarFoto"]["tmp_name"]) && $_FILES["editarFoto"]["tmp_name"] != "") {
+                $rutaFoto = self::_procesarImagenUsuario($_FILES["editarFoto"], $usuario, $rutaFotoActual);
+            }
+
+            $encriptarPassword = $passwordActual; 
+
+            if (isset($_POST["editarPassword"]) && !empty($_POST["editarPassword"])) {
+                $nuevaPassword = $_POST["editarPassword"]; 
+                if (!self::_validarCredencialUsuario($nuevaPassword)) {
+                    throw new Exception("¡La contraseña nueva tiene formato inválido!");
+                }
+                $encriptarPassword = password_hash($nuevaPassword, PASSWORD_DEFAULT);
+            }
+
+            $datos = [
+                "id" => $idUsuario, 
+                "nombre" => $nombre,
+                "usuario" => $usuario,
+                "password" => $encriptarPassword,
+                "perfil" => $perfil,
+                "foto" => $rutaFoto
+            ];
+
+            $respuesta = ModeloUsuarios::mdlEditarUsuario(self::$TABLE_NAME, $datos);
+
+            if ($respuesta != "ok") {
+                throw new Exception("Error al editar el usuario. Intente más tarde.");
+            }
+
+            self::_jsonResponse(true, "El usuario ha sido editado correctamente", [], "usuarios");
+
+        } catch (Exception $e) {
+            self::_jsonResponse(false, $e->getMessage());
         }
     }
 
-    /*=============================================
-    MÉTODO BORRAR USUARIO
-    =============================================*/
     public static function ctrBorrarUsuario(){
-
-        if(isset($_GET["idUsuario"])){
-
-            $tabla = "usuarios";
-            $datos = intval($_GET["idUsuario"]);
-
-            if(isset($_GET["fotoUsuario"]) && !empty($_GET["fotoUsuario"])){
-                if(file_exists($_GET["fotoUsuario"])){
-                    unlink($_GET["fotoUsuario"]);
-                }
-                $usuarioFolder = 'vistas/img/usuarios/' . basename($_GET["usuario"]);
-                if(is_dir($usuarioFolder)){
-                    rmdir($usuarioFolder);
-                }
-            }
-
-            $respuesta = ModeloUsuarios::mdlBorrarUsuario($tabla, $datos);
-
-            if($respuesta == "ok"){
-
-                echo'<script>
-                    swal({
-                        type: "success",
-                        title: "El usuario ha sido borrado correctamente",
-                        showConfirmButton: true,
-                        confirmButtonText: "Cerrar",
-                        closeOnConfirm: false
-                    }).then(function(result) {
-                        if (result.value) {
-                            window.location = "usuarios";
-                        }
-                    })
-                </script>';
-
-            }else{
-                echo'<script>
-                    swal({
-                        type: "error",
-                        title: "Error al borrar el usuario. Intente más tarde.",
-                        showConfirmButton: true,
-                        confirmButtonText: "Cerrar"
-                    });
-                </script>';
-            }
-
+        if (!isset($_GET["idUsuario"]) || !is_numeric($_GET["idUsuario"])) {
+            self::_jsonResponse(false, "ID de usuario inválido o no proporcionado.");
+        }
+        if (!isset($_GET["usuario"])) { 
+            self::_jsonResponse(false, "Nombre de usuario no proporcionado para la eliminación de archivos.");
         }
 
+        try {
+            $idUsuario = intval($_GET["idUsuario"]);
+            $fotoUsuario = isset($_GET["fotoUsuario"]) ? $_GET["fotoUsuario"] : ""; 
+            $nombreUsuario = self::sanitizarEntrada($_GET["usuario"]); 
+
+            $defaultFoto = "vistas/img/usuarios/default/anonymous.png";
+            $fotoFueEliminada = false;
+
+            if (!empty($fotoUsuario) && $fotoUsuario != $defaultFoto && file_exists($fotoUsuario)) {
+                if (unlink($fotoUsuario)) {
+                    $fotoFueEliminada = true;
+                } else {
+                    error_log("Error al eliminar archivo de foto: " . $fotoUsuario . " para usuario ID: " . $idUsuario);
+                }
+            }
+            
+            if ($fotoFueEliminada && !empty($nombreUsuario)) {
+                $directorioUsuario = "vistas/img/usuarios/" . $nombreUsuario;
+                if (is_dir($directorioUsuario)) {
+                    $iterator = new \FilesystemIterator($directorioUsuario);
+                    if (!$iterator->valid()) { 
+                        if (!rmdir($directorioUsuario)) {
+                            error_log("Error al eliminar directorio: " . $directorioUsuario . " para usuario ID: " . $idUsuario);
+                        }
+                    } else {
+                         error_log("Directorio no vacío, no eliminado: " . $directorioUsuario . " para usuario ID: " . $idUsuario);
+                    }
+                }
+            }
+
+            $respuesta = ModeloUsuarios::mdlBorrarUsuario(self::$TABLE_NAME, $idUsuario);
+
+            if ($respuesta != "ok") {
+                throw new Exception("Error al borrar el usuario. Intente más tarde.");
+            }
+
+            self::_jsonResponse(true, "El usuario ha sido borrado correctamente", ["redirect" => "usuarios"]);
+
+        } catch (Exception $e) {
+            self::_jsonResponse(false, $e->getMessage());
+        }
     }
 }
 ?>
-

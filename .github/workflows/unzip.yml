@@ -4,14 +4,15 @@ on:
   push:
     paths:
       - '*.zip'
-      - '*.z??'  # Captura archivos .z01, .z02, etc.
+      - '*.z??'         # Captura archivos .z01, .z02, etc.
+      - '*.zip.???'     # Captura archivos .zip.001, .zip.002, etc.
 
 jobs:
   unzip-and-commit:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,9 +22,13 @@ jobs:
       - name: Prepare environment
         id: prep
         run: |
-          # Encuentra el archivo ZIP principal (el que no es .zXX)
-          MAIN_ZIP=$(ls *.zip 2>/dev/null | grep -v '.z[0-9][0-9]$' | head -n 1)
-          
+          MAIN_ZIP=""
+          if ls *.zip 2>/dev/null | grep -qv '.z[0-9][0-9]$'; then
+            MAIN_ZIP=$(ls *.zip 2>/dev/null | grep -v '.z[0-9][0-9]$' | head -n 1)
+          elif ls *.zip.001 2>/dev/null; then
+            MAIN_ZIP=$(ls *.zip.001 | head -n 1)
+          fi
+
           if [ -z "$MAIN_ZIP" ]; then
             echo "No se encontró archivo ZIP principal"
             echo "::set-output name=has_zips::false"
@@ -37,19 +42,19 @@ jobs:
         if: steps.prep.outputs.has_zips == 'true'
         run: |
           MAIN_ZIP="${{ steps.prep.outputs.main_zip }}"
-          BASE_NAME="${MAIN_ZIP%.*}"
-          
+          BASE_NAME="${MAIN_ZIP%%.*}"  # Parte base del nombre antes del primer punto
+
           # Verifica si hay archivos divididos
-          if ls ${BASE_NAME}.z?? 2>/dev/null; then
+          if ls ${BASE_NAME}.* 2>/dev/null | grep -qE '\.(z[0-9]{2}|zip\.[0-9]{3})$'; then
             echo "Detectados archivos ZIP divididos - combinando..."
-            zip -s 0 "$MAIN_ZIP" --out "combined_$MAIN_ZIP"
-            unzip "combined_$MAIN_ZIP" -d .
-            rm -f "combined_$MAIN_ZIP" ${BASE_NAME}.z??
+            zip -s 0 "$MAIN_ZIP" --out "combined_$BASE_NAME.zip"
+            unzip "combined_$BASE_NAME.zip" -d .
+            rm -f "combined_$BASE_NAME.zip" ${BASE_NAME}.z?? ${BASE_NAME}.zip.???
           else
             echo "Procesando ZIP normal..."
             unzip "$MAIN_ZIP" -d .
           fi
-          
+
           # Limpieza final
           rm -f "$MAIN_ZIP"
 
@@ -61,7 +66,7 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git checkout ${{ github.ref_name }}
-          
+
           git add .
           if ! git diff-index --quiet HEAD --; then
             git commit -m "Auto-commit: Archivos descomprimidos [skip ci]"

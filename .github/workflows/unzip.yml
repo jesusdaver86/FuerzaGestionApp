@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - '*.zip'
-      - '*.z??' # Captura archivos .z01, .z02, etc.
+      - '*.z*' # Captura archivos .z01, .z02, etc.
 
 jobs:
   unzip-and-commit:

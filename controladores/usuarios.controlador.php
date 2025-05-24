@@ -32,11 +32,19 @@ class ControladorUsuarios{
     MÉTODOS DE VALIDACIÓN PRIVADOS
     =============================================*/
     private static function _validarNombreUsuario($nombre){
-        return preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $nombre);
+        // Valida longitud entre 3 y 50 caracteres, y caracteres permitidos.
+        return preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]{3,50}$/', $nombre);
     }
 
     private static function _validarCredencialUsuario($credencial){
-        return preg_match('/^[a-zA-Z0-9]+$/', $credencial);
+        // Valida longitud entre 5 y 20 caracteres, y caracteres permitidos.
+        return preg_match('/^[a-zA-Z0-9]{5,20}$/', $credencial);
+    }
+
+    private static function _validarPassword($password) {
+        // Mínimo 8 caracteres, al menos una mayúscula, una minúscula, un número y un carácter especial.
+        $regex = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?~]).{8,}$/";
+        return preg_match($regex, $password);
     }
 
     /*=============================================
@@ -167,26 +175,34 @@ class ControladorUsuarios{
 
     public static function ctrCrearUsuario(){
         if (empty($_POST["nuevoNombre"]) || empty($_POST["nuevoUsuario"]) || empty($_POST["nuevoPassword"]) || !isset($_POST["nuevoPerfil"])) {
-            self::_jsonResponse(false, "Nombre, usuario y contraseña son requeridos. Perfil también es necesario.");
+            self::_jsonResponse(false, "Nombre, usuario, contraseña y perfil son requeridos.");
         }
 
         try {
+            // Sanitizar todas las entradas de texto POST
             $nombre = self::sanitizarEntrada($_POST["nuevoNombre"]);
             $usuario = self::sanitizarEntrada($_POST["nuevoUsuario"]);
-            $password = $_POST["nuevoPassword"]; 
+            $password = self::sanitizarEntrada($_POST["nuevoPassword"]); // Sanitizar también la contraseña
             $perfil = self::sanitizarEntrada($_POST["nuevoPerfil"]);
 
+            // Validaciones específicas
             if (!self::_validarNombreUsuario($nombre)) {
-                throw new Exception("Formato de nombre inválido.");
+                throw new Exception("El nombre debe tener entre 3 y 50 caracteres y solo letras, números o espacios.");
             }
             if (!self::_validarCredencialUsuario($usuario)) {
-                throw new Exception("Formato de usuario inválido.");
+                throw new Exception("El usuario debe tener entre 5 y 20 caracteres y solo letras o números.");
             }
-            if (!self::_validarCredencialUsuario($password)) {
-                throw new Exception("Formato de contraseña inválido."); 
+            if (!self::_validarPassword($password)) {
+                throw new Exception("La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial.");
             }
 
-            $rutaFoto = ""; 
+            // Validación de perfil
+            $perfilesPermitidos = ["Administrador", "Especial", "Vendedor"];
+            if (!in_array($perfil, $perfilesPermitidos)) {
+                throw new Exception("Perfil no válido. Los perfiles permitidos son: Administrador, Especial, Vendedor.");
+            }
+
+            $rutaFoto = "";
             if (isset($_FILES["nuevaFoto"]["tmp_name"]) && $_FILES["nuevaFoto"]["tmp_name"] != "") {
                 $rutaFoto = self::_procesarImagenUsuario($_FILES["nuevaFoto"], $usuario); 
             }
@@ -221,49 +237,91 @@ class ControladorUsuarios{
     }
 
     public static function ctrEditarUsuario(){
-        if (!isset($_POST["idUsuario"]) || !isset($_POST["editarNombre"]) || !isset($_POST["editarUsuario"]) || !isset($_POST["editarPerfil"]) || !isset($_POST["passwordActual"]) || !isset($_POST["fotoActual"])) {
-            self::_jsonResponse(false, "Datos de usuario incompletos para la edición.");
+        // Comprobar que los campos mínimos requeridos para la edición están presentes.
+        // passwordActual y fotoActual son opcionales en el sentido de que pueden no ser enviados si no cambian,
+        // pero el controlador debe manejarlos adecuadamente.
+        if (!isset($_POST["idUsuario"]) || !isset($_POST["editarNombre"]) || !isset($_POST["editarUsuario"]) || !isset($_POST["editarPerfil"])) {
+            self::_jsonResponse(false, "ID, nombre, usuario y perfil son requeridos para la edición.");
         }
 
         try {
+            // Sanitizar todas las entradas de texto POST relevantes
             $idUsuario = self::sanitizarEntrada($_POST["idUsuario"]);
             $nombre = self::sanitizarEntrada($_POST["editarNombre"]);
-            $usuario = self::sanitizarEntrada($_POST["editarUsuario"]); 
+            $usuario = self::sanitizarEntrada($_POST["editarUsuario"]);
             $perfil = self::sanitizarEntrada($_POST["editarPerfil"]);
-            $passwordActual = self::sanitizarEntrada($_POST["passwordActual"]); 
-            $rutaFotoActual = self::sanitizarEntrada($_POST["fotoActual"]);
+            
+            // Sanitizar passwordActual y fotoActual solo si existen en _POST.
+            // passwordActual se espera que sea el hash de la contraseña actual si no se va a cambiar.
+            $passwordActualHash = isset($_POST["passwordActual"]) ? self::sanitizarEntrada($_POST["passwordActual"]) : null;
+            $rutaFotoActual = isset($_POST["fotoActual"]) ? self::sanitizarEntrada($_POST["fotoActual"]) : "";
 
+
+            // Validaciones específicas
             if (!self::_validarNombreUsuario($nombre)) {
-                throw new Exception("¡El nombre no puede ir vacío o llevar caracteres especiales!");
+                throw new Exception("El nombre debe tener entre 3 y 50 caracteres y solo letras, números o espacios.");
+            }
+            
+            if (!self::_validarCredencialUsuario($usuario)) { // Asumiendo que el username se puede editar
+                 throw new Exception("El usuario debe tener entre 5 y 20 caracteres y solo letras o números.");
             }
 
-            $rutaFoto = $rutaFotoActual; 
+            // Validación de perfil
+            $perfilesPermitidos = ["Administrador", "Especial", "Vendedor"];
+            if (!in_array($perfil, $perfilesPermitidos)) {
+                throw new Exception("Perfil no válido. Los perfiles permitidos son: Administrador, Especial, Vendedor.");
+            }
+
+            $rutaFoto = $rutaFotoActual;
             if (isset($_FILES["editarFoto"]["tmp_name"]) && $_FILES["editarFoto"]["tmp_name"] != "") {
+                // _procesarImagenUsuario ya contiene validaciones de tipo, tamaño y errores de subida.
                 $rutaFoto = self::_procesarImagenUsuario($_FILES["editarFoto"], $usuario, $rutaFotoActual);
             }
 
-            $encriptarPassword = $passwordActual; 
+            // Manejo de la contraseña
+            $passwordParaGuardar = $passwordActualHash; // Por defecto, mantener la contraseña actual (hash del campo hidden)
 
             if (isset($_POST["editarPassword"]) && !empty($_POST["editarPassword"])) {
-                $nuevaPassword = $_POST["editarPassword"]; 
-                if (!self::_validarCredencialUsuario($nuevaPassword)) {
-                    throw new Exception("¡La contraseña nueva tiene formato inválido!");
+                $nuevaPassword = self::sanitizarEntrada($_POST["editarPassword"]); // Sanitizar la nueva contraseña
+                if (!self::_validarPassword($nuevaPassword)) {
+                    throw new Exception("La nueva contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y un carácter especial.");
                 }
-                $encriptarPassword = password_hash($nuevaPassword, PASSWORD_DEFAULT);
+                $passwordParaGuardar = password_hash($nuevaPassword, PASSWORD_DEFAULT);
             }
 
             $datos = [
-                "id" => $idUsuario, 
+                "id" => $idUsuario,
                 "nombre" => $nombre,
                 "usuario" => $usuario,
-                "password" => $encriptarPassword,
                 "perfil" => $perfil,
                 "foto" => $rutaFoto
             ];
 
+            // Solo incluir 'password' en $datos si efectivamente hay una contraseña para guardar (nueva o la actual hasheada).
+            // Si $passwordParaGuardar es null (porque passwordActual no se envió y editarPassword está vacía),
+            // entonces no se debería incluir 'password' en $datos, para que el modelo no la actualice a null.
+            if ($passwordParaGuardar !== null) {
+                $datos["password"] = $passwordParaGuardar;
+            } else {
+                // Si $passwordParaGuardar es null, significa que no se envió passwordActual y tampoco se está estableciendo una nueva.
+                // En este caso, no queremos que la contraseña se actualice en la BD.
+                // El modelo mdlEditarUsuario debe ser capaz de manejar la ausencia de la clave 'password' en $datos.
+                // Si el modelo no lo maneja, podría causar un error o borrar la contraseña.
+                // Una alternativa sería obtener la contraseña actual de la BD aquí si no se proporciona passwordActual,
+                // pero es más limpio que el modelo maneje la no actualización de campos no presentes en $datos.
+                // Por ahora, si $passwordParaGuardar es null, no se pasa 'password', asumiendo que el modelo lo gestiona.
+                 error_log("ControladorUsuarios::ctrEditarUsuario - No se proporcionó contraseña actual ni nueva contraseña para el usuario ID: " . $idUsuario . ". La contraseña no se actualizará.");
+            }
+
+
             $respuesta = ModeloUsuarios::mdlEditarUsuario(self::$TABLE_NAME, $datos);
 
             if ($respuesta != "ok") {
+                // Si la respuesta no es "ok", verificar si fue por la contraseña.
+                // Esto es una suposición; el modelo debería retornar errores más específicos si es posible.
+                if (empty($datos["password"]) && $passwordActualHash === null && (isset($_POST["editarPassword"]) && !empty($_POST["editarPassword"]))) {
+                     throw new Exception("Error al editar el usuario. Parece que hubo un problema con la actualización de la contraseña. Verifique los datos.");
+                }
                 throw new Exception("Error al editar el usuario. Intente más tarde.");
             }
 
@@ -281,15 +339,15 @@ class ControladorUsuarios{
         if (!isset($_GET["usuario"])) { 
             self::_jsonResponse(false, "Nombre de usuario no proporcionado para la eliminación de archivos.");
         }
-
+    
         try {
-            $idUsuario = intval($_GET["idUsuario"]);
-            $fotoUsuario = isset($_GET["fotoUsuario"]) ? $_GET["fotoUsuario"] : ""; 
-            $nombreUsuario = self::sanitizarEntrada($_GET["usuario"]); 
-
+            $idUsuario = intval($_GET["idUsuario"]); // Sanitizado por intval
+            $fotoUsuario = isset($_GET["fotoUsuario"]) ? self::sanitizarEntrada($_GET["fotoUsuario"]) : ""; // Sanitizar si se usa
+            $nombreUsuario = isset($_GET["usuario"]) ? self::sanitizarEntrada($_GET["usuario"]) : ""; // Sanitizar
+    
             $defaultFoto = "vistas/img/usuarios/default/anonymous.png";
             $fotoFueEliminada = false;
-
+    
             if (!empty($fotoUsuario) && $fotoUsuario != $defaultFoto && file_exists($fotoUsuario)) {
                 if (unlink($fotoUsuario)) {
                     $fotoFueEliminada = true;
@@ -299,27 +357,28 @@ class ControladorUsuarios{
             }
             
             if ($fotoFueEliminada && !empty($nombreUsuario)) {
-                $directorioUsuario = "vistas/img/usuarios/" . $nombreUsuario;
+                $directorioUsuario = "vistas/img/usuarios/" . $nombreUsuario; // $nombreUsuario ya está sanitizado
                 if (is_dir($directorioUsuario)) {
+                    // Asegurarse que el directorio esté vacío antes de intentar borrarlo
                     $iterator = new \FilesystemIterator($directorioUsuario);
                     if (!$iterator->valid()) { 
                         if (!rmdir($directorioUsuario)) {
-                            error_log("Error al eliminar directorio: " . $directorioUsuario . " para usuario ID: " . $idUsuario);
+                            error_log("Error al eliminar directorio vacío: " . $directorioUsuario . " para usuario ID: " . $idUsuario);
                         }
                     } else {
-                         error_log("Directorio no vacío, no eliminado: " . $directorioUsuario . " para usuario ID: " . $idUsuario);
+                         error_log("Directorio no vacío, no se eliminó: " . $directorioUsuario . " para usuario ID: " . $idUsuario);
                     }
                 }
             }
-
+    
             $respuesta = ModeloUsuarios::mdlBorrarUsuario(self::$TABLE_NAME, $idUsuario);
-
+    
             if ($respuesta != "ok") {
                 throw new Exception("Error al borrar el usuario. Intente más tarde.");
             }
-
+    
             self::_jsonResponse(true, "El usuario ha sido borrado correctamente", ["redirect" => "usuarios"]);
-
+    
         } catch (Exception $e) {
             self::_jsonResponse(false, $e->getMessage());
         }

@@ -2,7 +2,7 @@
 
 ## Project Description
 
-FuerzaGestionApp is a web application designed to streamline operational management, particularly for businesses in the transportation or logistics sector. It provides modules for handling passengers, managing vehicle units, and tracking sales, thereby helping to optimize core business processes.
+**FuerzaGestionApp** is a web application designed to streamline operational management, particularly for businesses in the transportation and logistics sectors. It provides modules for handling passengers, managing vehicle units, and includes a POA (Plan de Operaciones Anual) for employees. This module allows users to view a table displaying the expiration dates of various documents, such as medical certificates, light vehicle certificates, heavy vehicle certificates, and driver's licenses. Users can access these documents for download or view them directly in the browser, as they are uploaded within the application.
 
 ## Technologies Used
 
@@ -18,7 +18,7 @@ FuerzaGestionApp is a web application designed to streamline operational managem
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone https://github.com/jesusdaver86/FuerzaGestionApp
     ```
 2.  **Install PHP dependencies:**
     Navigate to the project directory and run:
@@ -44,7 +44,7 @@ FuerzaGestionApp is a web application designed to streamline operational managem
 After successful installation, you can access FuerzaGestionApp through your web browser.
 *   Manage passenger records via the 'Pasajeros' module.
 *   Track vehicle units in the 'Unidades' section.
-*   Record and view sales transactions under 'Ventas'.
+*   View employee documentation and expiration dates in the POA module.
 (More specific examples and screenshots to be added as the project develops.)
 
 ## Contribution Guide
@@ -79,4 +79,4 @@ This project is licensed under the [Specify License Here] License - see the `LIC
 
 ## Contact Details
 
-For questions, support, or to report issues, please contact [Your Name/Organization] at [your-email@example.com or link to the project's issue tracker].
+For questions, support, or to report issues, please contact [Jesus Rivero] at [jesus.rivero86@gmail.com].

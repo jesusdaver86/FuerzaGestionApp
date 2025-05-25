@@ -18,7 +18,7 @@
 
 1.  **Clone the repository:**
     ```bash
-    git clone <repository-url>
+    git clone <https://github.com/jesusdaver86/FuerzaGestionApp.git>
     ```
 2.  **Install PHP dependencies:**
     Navigate to the project directory and run:

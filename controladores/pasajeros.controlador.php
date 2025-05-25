@@ -18,111 +18,54 @@ class ControladorPasajeros{
 
 
 	public static function ctrCrearPasajero(){
+	    $response = []; 
 
+	    if(isset($_POST["nuevoPasajero"])){ // Outer check
+	        $valid_gerencia_regex = '/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\/\-\.\_ ]+$/'; 
+	        $valid_fecha_regex = '/^\d{4}\/(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])$/';
 
-	if(isset($_POST["nuevoPasajero"])){
+	        // Initial validation using $_POST
+	        if(isset($_POST["nuevoPasajero"]) && preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["nuevoPasajero"]) &&
+	           isset($_POST["nuevoDocumentoId"]) && preg_match('/^[0-9]+$/', $_POST["nuevoDocumentoId"]) &&
+	           isset($_POST["nuevaGerencia"]) && preg_match($valid_gerencia_regex, $_POST["nuevaGerencia"]) &&
+	           isset($_POST["nuevoNroUnidad"]) && preg_match('/^[#\.\-a-zA-Z0-9 ]+$/', $_POST["nuevoNroUnidad"]) &&
+	           isset($_POST["nuevaFechaC"]) && preg_match($valid_fecha_regex, $_POST["nuevaFechaC"])
+	        ){
+	            // Assign to local variables after passing initial checks
+	            $nombre = $_POST["nuevoPasajero"];
+	            $documentoId = $_POST["nuevoDocumentoId"];
+	            $gerencia = $_POST["nuevaGerencia"];
+	            $nroUnidad = $_POST["nuevoNroUnidad"];
+	            $fechaC = $_POST["nuevaFechaC"];
 
+	            $date_parts = explode('/', $fechaC); // Use local variable
+	            if (checkdate((int)$date_parts[1], (int)$date_parts[2], (int)$date_parts[0])) {
+	                $tabla = "pasajeros";
+	                $datos = array(
+	                    "nombre"=>$nombre,
+	                    "documento"=>$documentoId,
+	                    "gerencia"=>$gerencia,
+	                    "nroUnidad"=>$nroUnidad,
+	                    "fecha_c"=>$fechaC
+	                );
+	                $respuesta_modelo = ModeloPasajeros::mdlIngresarPasajero($tabla, $datos);
 
-		if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["nuevoPasajero"]) &&
-
-		   preg_match('/^[0-9]+$/', $_POST["nuevoDocumentoId"]) &&
-
-		   preg_match('/^[#\.\-a-zA-Z0-9 ]+$/', $_POST["nuevoNroUnidad"])){
-
-
-		   	$tabla = "pasajeros";
-
-
-		   	$datos = array("nombre"=>$_POST["nuevoPasajero"],
-
-				           "documento"=>$_POST["nuevoDocumentoId"],
-
-				           "gerencia"=>$_POST["nuevaGerencia"],
-
-				           "nroUnidad"=>$_POST["nuevoNroUnidad"],
-
-				           "fecha_c"=>$_POST["nuevaFechaC"]);
-
-
-		   	$respuesta = ModeloPasajeros::mdlIngresarPasajero($tabla, $datos);
-
-
-		   	if($respuesta == "ok"){
-
-
-				echo'<script>
-
-
-					swal({
-
-						  type: "success",
-
-						  title: "El pasajero ha sido guardado correctamente",
-
-						  showConfirmButton: true,
-
-						  confirmButtonText: "Cerrar"
-
-						  }).then(function(result){
-
-									if (result.value) {
-
-
-									window.location = "pasajeros";
-
-
-									}
-
-								})
-
-
-				</script>';
-
-
-			}
-
-
-		}else{
-
-
-			echo'<script>
-
-
-					swal({
-
-						  type: "error",
-
-						  title: "¡El pasajero no puede ir vacío o llevar caracteres especiales!",
-
-						  showConfirmButton: true,
-
-						  confirmButtonText: "Cerrar"
-
-						  }).then(function(result){
-
-							if (result.value) {
-
-
-							window.location = "pasajeros";
-
-
-							}
-
-						})
-
-
-		  	</script>';
-
-
-
-
-		}
-
-
+	                if($respuesta_modelo == "ok"){
+	                    $response = ["status" => "success", "message" => "El pasajero ha sido guardado correctamente"];
+	                } else {
+	                    $response = ["status" => "error", "message" => "Error al guardar el pasajero: " . ($respuesta_modelo ?: "Error desconocido del modelo.")];
+	                }
+	            } else {
+	                $response = ["status" => "error", "message" => "¡La fecha proporcionada no es válida!"];
+	            }
+	        } else {
+	            $response = ["status" => "error", "message" => "¡Todos los campos son obligatorios y deben tener formatos válidos! Por favor, revise el nombre, documento, gerencia, nro. de unidad y fecha."];
+	        }
+	    } else {
+	        $response = ["status" => "error", "message" => "No se recibieron datos del formulario."];
+	    }
+	    echo json_encode($response);
 	}
-
-
-}
 
 
 	/*=============================================
@@ -148,73 +91,56 @@ class ControladorPasajeros{
 	=============================================*/
 
 	public static function ctrEditarPasajero(){
+	    $response = []; 
 
-		if(isset($_POST["editarPasajero"])){
+	    if(isset($_POST["idPasajero"])){ 
+	        $valid_gerencia_regex = '/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ\/\-\.\_ ]+$/';
+	        $valid_fecha_regex = '/^\d{4}\/(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])$/';
 
-			if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editarPasajero"]) &&
-			   preg_match('/^[0-9]+$/', $_POST["editarDocumentoId"]) &&
-			   preg_match('/^[#\.\-a-zA-Z0-9 ]+$/', $_POST["editarNroUnidad"])){
+	        // Initial validation using $_POST
+	        if(isset($_POST["idPasajero"]) && filter_var($_POST["idPasajero"], FILTER_VALIDATE_INT) && ((int)$_POST["idPasajero"] > 0) &&
+	           isset($_POST["editarPasajero"]) && preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/', $_POST["editarPasajero"]) &&
+	           isset($_POST["editarDocumentoId"]) && preg_match('/^[0-9]+$/', $_POST["editarDocumentoId"]) &&
+	           isset($_POST["editarGerencia"]) && preg_match($valid_gerencia_regex, $_POST["editarGerencia"]) &&
+	           isset($_POST["editarNroUnidad"]) && preg_match('/^[#\.\-a-zA-Z0-9 ]+$/', $_POST["editarNroUnidad"]) &&
+	           isset($_POST["editarFechaC"]) && preg_match($valid_fecha_regex, $_POST["editarFechaC"])
+	        ){
+	            // Assign to local variables after passing initial checks
+	            $idPasajero = (int)$_POST["idPasajero"];
+	            $editarPasajeroNombre = $_POST["editarPasajero"];
+	            $editarDocumentoId = $_POST["editarDocumentoId"];
+	            $editarGerencia = $_POST["editarGerencia"];
+	            $editarNroUnidad = $_POST["editarNroUnidad"];
+	            $editarFechaC = $_POST["editarFechaC"];
 
-			   	$tabla = "pasajeros";
+	            $date_parts = explode('/', $editarFechaC); // Use local variable
+	            if (checkdate((int)$date_parts[1], (int)$date_parts[2], (int)$date_parts[0])) {
+	                $tabla = "pasajeros";
+	                $datos = array(
+	                    "id"=>$idPasajero,
+	                    "nombre"=>$editarPasajeroNombre,
+	                    "documento"=>$editarDocumentoId,
+	                    "gerencia"=>$editarGerencia,
+	                    "nroUnidad"=>$editarNroUnidad,
+	                    "fecha_c"=>$editarFechaC
+	                );
+	                $respuesta_modelo = ModeloPasajeros::mdlEditarPasajero($tabla, $datos);
 
-			   	$datos = array("id"=>$_POST["idPasajero"],
-			   			
-			   				   "nombre"=>$_POST["editarPasajero"],
-					           "documento"=>$_POST["editarDocumentoId"],
-					           "gerencia"=>$_POST["editarGerencia"],
-					           "nroUnidad"=>$_POST["editarNroUnidad"],
-					           "fecha_c"=>$_POST["editarFechaC"]);
-
-			   	$respuesta = ModeloPasajeros::mdlEditarPasajero($tabla, $datos);
-
-			   	if($respuesta == "ok"){
-
-					echo'<script>
-
-					swal({
-						  type: "success",
-						  title: "El pasajero ha sido cambiado correctamente",
-						  showConfirmButton: true,
-						  confirmButtonText: "Cerrar"
-						  }).then(function(result){
-									if (result.value) {
-
-									window.location = "pasajeros";
-
-									}
-								})
-
-					</script>';
-
-				}
-
-			}else{
-
-				echo'<script>
-
-					swal({
-						  type: "error",
-						  title: "¡El pasajero no puede ir vacío o llevar caracteres especiales!",
-						  showConfirmButton: true,
-						  confirmButtonText: "Cerrar"
-						  }).then(function(result){
-							if (result.value) {
-
-							window.location = "pasajeros";
-
-							}
-						})
-
-			  	</script>';
-
-
-
-			}
-
-
-		}
-
-
+	                if($respuesta_modelo == "ok"){
+	                    $response = ["status" => "success", "message" => "El pasajero ha sido cambiado correctamente"];
+	                } else {
+	                    $response = ["status" => "error", "message" => "Error al actualizar el pasajero en la base de datos."];
+	                }
+	            } else {
+	                $response = ["status" => "error", "message" => "¡La fecha 'Editar Fecha' proporcionada no es válida!"];
+	            }
+	        } else {
+	            $response = ["status" => "error", "message" => "¡Todos los campos para editar son obligatorios y deben tener formatos válidos! Por favor, revise el ID, nombre, documento, gerencia, nro. de unidad y fecha."];
+	        }
+	    } else {
+	        $response = ["status" => "error", "message" => "ID de pasajero no proporcionado para la edición."];
+	    }
+	    echo json_encode($response);
 	}
 
 
@@ -227,38 +153,29 @@ class ControladorPasajeros{
 	=============================================*/
 
 	public static function ctrEliminarPasajero(){
+	    header('Content-Type: application/json'); 
+	    $response = []; 
 
-		if(isset($_GET["idPasajero"])){
+	    if(isset($_POST["idPasajero"])){ 
+	        $idPasajero = $_POST["idPasajero"]; // Assign to local variable
+	        if(filter_var($idPasajero, FILTER_VALIDATE_INT) && (int)$idPasajero > 0) {
+	            $tabla = "pasajeros";
+	            $datos = (int)$idPasajero; // Use casted local variable
 
-			$tabla ="pasajeros";
-			$datos = $_GET["idPasajero"];
+	            $respuesta_modelo = ModeloPasajeros::mdlEliminarPasajero($tabla, $datos);
 
-			$respuesta = ModeloPasajeros::mdlEliminarPasajero($tabla, $datos);
-
-			if($respuesta == "ok"){
-
-				echo'<script>
-
-				swal({
-					  type: "success",
-					  title: "El pasajero ha sido borrado correctamente",
-					  showConfirmButton: true,
-					  confirmButtonText: "Cerrar",
-					  closeOnConfirm: false
-					  }).then(function(result){
-								if (result.value) {
-
-								window.location = "pasajeros";
-
-								}
-							})
-
-				</script>';
-
-			}		
-
-		}
-
+	            if($respuesta_modelo == "ok"){
+	                $response = ["status" => "success", "message" => "El pasajero ha sido borrado correctamente"];
+	            } else {
+	                $response = ["status" => "error", "message" => "Error al borrar el pasajero. Es posible que esté asociado a otros registros."]; 
+	            }
+	        } else {
+	            $response = ["status" => "error", "message" => "El identificador del pasajero no es válido."];
+	        }     
+	    } else {
+	        $response = ["status" => "error", "message" => "No se proporcionó ID de pasajero."];
+	    }
+	    echo json_encode($response);
 	}
 
 
@@ -285,19 +202,15 @@ return $respuesta;
 	public function ctrDescargarReportePasajeros(){
 
 		if(isset($_GET["reportep"])){
-
-
+            // $reportep = $_GET["reportep"]; // Value not used, so assignment isn't critical
 
 			$tabla = "pasajeros";
-
-
             
+            // These are not from $_GET or $_POST, so no change needed here.
+            $item = null;
+            $valor = null;
 
-
-				$item = null;
-				$valor = null;
-
-				$ventas = ModeloPasajeros::mdlMostrarPasajeros($tabla, $item, $valor);
+            $ventas = ModeloPasajeros::mdlMostrarPasajeros($tabla, $item, $valor);
 
 
 $tempFile = tempnam(sys_get_temp_dir(), 'excel_');
@@ -391,12 +304,26 @@ $objPHPExcel->getActiveSheet()->setTitle('Movilizacion de Personal');
 
 
 
-$ruta = "vistas/img/plantilla/logo-blanco-bloque.png";
+// $ruta = "vistas/img/plantilla/logo-blanco-bloque.png"; // Original line
 
 $objDrawing = new PHPExcel_Worksheet_Drawing();
 $objDrawing->setName('Logo');
 $objDrawing->setDescription('Logo');
-$objDrawing->setPath('../../vistas/img/plantilla/logo-blanco-bloque.png');
+
+$logoPathOriginal = '../../vistas/img/plantilla/logo-blanco-bloque.png'; // Original path for fallback
+// Path construction as per prompt's specific instruction:
+$logoPathAttempt = dirname(__FILE__) . '/../../vistas/img/plantilla/logo-blanco-bloque.png';
+$absoluteLogoPath = realpath($logoPathAttempt);
+
+if ($absoluteLogoPath && file_exists($absoluteLogoPath)) {
+    $objDrawing->setPath($absoluteLogoPath);
+} else {
+    // Fallback to original path if realpath fails or file doesn't exist at absolute path
+    // Consider logging an error here in a real application
+    $objDrawing->setPath($logoPathOriginal); 
+    // For debugging, one might add: error_log("Logo not found at attempted absolute path: " . $logoPathAttempt . ", nor at realpath: " . $absoluteLogoPath . ". Falling back to: " . $logoPathOriginal);
+}
+
 $objDrawing->setHeight(36);
 $objDrawing->setWorksheet($objPHPExcel->getActiveSheet());
 
@@ -427,13 +354,12 @@ $objPHPExcel->getActiveSheet()->unmergeCells('C1:D1');
 
 // Configuración de protección de celdas
 
+/*
 $contraseña = 'PHPExcel17';
 $objPHPExcel->getActiveSheet()->getProtection()->setPassword($contraseña);
-
 $objPHPExcel->getActiveSheet()->getProtection()->setSheet(true);
-
-
 $objPHPExcel->getActiveSheet()->protectCells('A:Z', $contraseña);
+*/
 
 
 $objPHPExcel->getActiveSheet()->getColumnDimension('A')->setAutoSize(true);
@@ -839,14 +765,4 @@ readfile($tempFile);
 exit;
 
 
-}}}  
-
-
-
-
-
-
-	
-
-
-
+}}}

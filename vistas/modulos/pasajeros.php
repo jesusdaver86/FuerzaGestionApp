@@ -60,11 +60,21 @@ if($_SESSION["perfil"] == "Especial"){
         </button>
 
             <div class="box-tools pull-right">
-        <?php if (isset($_GET["fechaInicial"])) {
-            echo '<a href="vistas/modulos/descargar-reportepasajeros.php?reporte=reporte&fechaInicial=' . $_GET["fechaInicial"] . '&fechaFinal=' . $_GET["fechaFinal"] . '">';
-        } else {
-            echo '<a href="vistas/modulos/descargar-reportepasajeros.php?reportep=reportep">';
-        } ?>
+        <?php 
+            $download_url = "index.php?ruta=reporte-pasajeros";
+            if (isset($_GET["fechaInicial"]) && isset($_GET["fechaFinal"])) {
+               $download_url .= "&reporte=reporte"; // Keep existing 'reporte' parameter for compatibility
+               $download_url .= "&fechaInicial=" . urlencode($_GET["fechaInicial"]) . "&fechaFinal=" . urlencode($_GET["fechaFinal"]);
+            } elseif (isset($_GET["reportep"])){ 
+               $download_url .= "&reportep=" . urlencode($_GET["reportep"]);
+            }
+            // Fallback if neither date range nor specific reportep is set, can default to all or a specific flag
+            // For now, if nothing is set, it will just be index.php?ruta=reporte-pasajeros which implies all data by default in the controller.
+            // If the controller strictly requires 'reportep=reportep' for all data, add:
+            // else { $download_url .= "&reportep=reportep"; } 
+
+            echo '<a href="' . $download_url . '">';
+        ?>
         <button class="btn btn-success" style="margin-top:5px">Descargar reporte en Excel</button>
       </a>
         <br>
@@ -117,27 +127,27 @@ if($_SESSION["perfil"] == "Especial"){
 
                     <td>'.($key+1).'</td>
 
-                    <td>'.$value["nroUnidad"].'</td>
+                    <td>'.htmlspecialchars($value["nroUnidad"], ENT_QUOTES, 'UTF-8').'</td>
 
-                    <td>'.$value["nombre"].'</td>
+                    <td>'.htmlspecialchars($value["nombre"], ENT_QUOTES, 'UTF-8').'</td>
 
-                    <td>'.$value["documento"].'</td>
+                    <td>'.htmlspecialchars($value["documento"], ENT_QUOTES, 'UTF-8').'</td>
 
-                    <td>'.$value["gerencia"].'</td>
+                    <td>'.htmlspecialchars($value["gerencia"], ENT_QUOTES, 'UTF-8').'</td>
 
                     
 
-                    <td>'.$value["fecha_c"].'</td>';
+                    <td>'.htmlspecialchars($value["fecha_c"], ENT_QUOTES, 'UTF-8').'</td>';
 
               /*echo '<td>'.$value["perfil"].'</td>';*/
 
                   if($value["estado"] != 0){
 
-                    echo '<td><button class="btn btn-success btn-xs btnActivar" idPasajero="'.$value["id"].'" estadoPasajero="0">Activado</button></td>';
+                    echo '<td><button class="btn btn-success btn-xs btnActivar" idPasajero="'.htmlspecialchars($value["id"], ENT_QUOTES, 'UTF-8').'" estadoPasajero="0">Activado</button></td>';
 
                   }else{
 
-                    echo '<td><button class="btn btn-danger btn-xs btnActivar" idPasajero="'.$value["id"].'" estadoPasajero="1">Desactivado</button></td>';
+                    echo '<td><button class="btn btn-danger btn-xs btnActivar" idPasajero="'.htmlspecialchars($value["id"], ENT_QUOTES, 'UTF-8').'" estadoPasajero="1">Desactivado</button></td>';
 
                   }   
 
@@ -145,17 +155,17 @@ if($_SESSION["perfil"] == "Especial"){
               
 
 
-                    echo '<td>'.$value["fecha"].'</td>
+                    echo '<td>'.htmlspecialchars($value["fecha"], ENT_QUOTES, 'UTF-8').'</td>
 
                     <td>
 
                       <div class="btn-group">
                           
-                        <button class="btn btn-warning btnEditarPasajero" data-toggle="modal" data-target="#modalEditarPasajero" idPasajero="'.$value["id"].'"><i class="fa fa-pencil"></i></button>';
+                        <button class="btn btn-warning btnEditarPasajero" data-toggle="modal" data-target="#modalEditarPasajero" idPasajero="'.htmlspecialchars($value["id"], ENT_QUOTES, 'UTF-8').'"><i class="fa fa-pencil"></i></button>';
 
                       if($_SESSION["perfil"] == "Administrador"){
 
-                          echo '<button class="btn btn-danger btnEliminarPasajero" idPasajero="'.$value["id"].'"><i class="fa fa-times"></i></button>';
+                          echo '<button class="btn btn-danger btnEliminarPasajero" idPasajero="'.htmlspecialchars($value["id"], ENT_QUOTES, 'UTF-8').'"><i class="fa fa-times"></i></button>';
 
                       }
 
@@ -191,7 +201,7 @@ MODAL AGREGAR PASAJERO
 
     <div class="modal-content">
 
-      <form role="form" method="post">
+      <form role="form" method="post" id="formAgregarPasajero">
 
         <!--=====================================
         CABEZA DEL MODAL
@@ -463,8 +473,10 @@ MODAL AGREGAR PASAJERO
 
       <?php
 
+        /*
         $crearPasajero = new ControladorPasajeros();
         $crearPasajero -> ctrCrearPasajero();
+        */
 
       ?>
 
@@ -484,7 +496,7 @@ MODAL EDITAR PASAJERO
 
     <div class="modal-content">
 
-      <form role="form" method="post">
+      <form role="form" method="post" id="formEditarPasajero">
 
         <!--=====================================
         CABEZA DEL MODAL
@@ -645,8 +657,10 @@ MODAL EDITAR PASAJERO
 
       <?php
 
+        /*
         $editarPasajero = new ControladorPasajeros();
         $editarPasajero -> ctrEditarPasajero();
+        */
 
       ?>
 
@@ -664,5 +678,3 @@ MODAL EDITAR PASAJERO
   $eliminarPasajero -> ctrEliminarPasajero();
 
 ?>
-
-

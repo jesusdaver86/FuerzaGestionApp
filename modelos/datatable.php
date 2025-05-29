@@ -28,9 +28,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 $server = "localhost";
-$user = "heavkfwj_root";
-$pass = Raida2028.";
-$bd = "heavkfwj_gestion_tp";
+$user = "user";
+$pass = pass";
+$bd = "bd";
 
 //Creamos la conexión
 $conexion = mysqli_connect($server, $user, $pass,$bd) 

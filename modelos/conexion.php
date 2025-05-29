@@ -36,9 +36,9 @@ class Conexion{
         // but they should be present for production)
         try {
             $host = getenv('DB_HOST') ?: 'localhost'; 
-            $dbname = getenv('DB_NAME') ?: 'heavkfwj_gestion_tp'; 
-            $username = getenv('DB_USER') ?: 'heavkfwj_root'; 
-            $password = getenv('DB_PASS') ?: 'Raida2028.'; 
+            $dbname = getenv('DB_NAME') ?: 'DB_NAME'; 
+            $username = getenv('DB_USER') ?: 'DB_USER'; 
+            $password = getenv('DB_PASS') ?: 'DB_PASS'; 
 
             $link = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
             $link->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

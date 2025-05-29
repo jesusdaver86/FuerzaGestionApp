@@ -9,7 +9,7 @@ class Conexion {
 
     private function __construct() {
 
-        $this->pdo = new PDO("mysql:host=localhost;dbname=heavkfwj_gestion_tp", "heavkfwj_root", Raida2028.");
+        $this->pdo = new PDO("mysql:host=localhost;dbname=dbname", "user", pass");
 
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

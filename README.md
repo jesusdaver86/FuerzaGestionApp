@@ -2,7 +2,7 @@
 
 ## Project Description
 
-FuerzaGestionApp is a web application designed to streamline operational management, particularly for businesses in the transportation or logistics sector. It provides modules for handling passengers, managing vehicle units, and tracking sales, thereby helping to optimize core business processes.
+FuerzaGestionApp is a web application designed to streamline operational management, particularly for businesses in the transportation or logistics sector. It provides modules for handling passengers, managing vehicle units, thereby helping to optimize core business processes.
 
 ## Technologies Used
 

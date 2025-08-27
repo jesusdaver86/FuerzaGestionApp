@@ -1,0 +1,111 @@
+<?php
+header('Access-Control-Allow-Origin: *'); 
+class Conexion {
+  public static function conectar() {
+    $link = new PDO("mysql:host=localhost;dbname=gestion_tp", "root", "raida2028");
+    $link->exec("set names utf8");
+    return $link;
+  }
+}
+
+$db = Conexion::conectar();
+/*
+function buildOrgChart($employees, $parentId = 0) {
+  $children = array();
+  foreach ($employees as $employee) {
+    if ($employee['id_administrador'] == $parentId) {
+      $children[] = array(
+        'name' => $employee['nombre'],
+        'title' => $employee['cargo'],
+        'children' => buildOrgChart($employees, $employee['id_administrador'])
+      );
+    }
+  }
+  return $children;
+}
+*/
+function buildOrgChart($employees, $parentId = 0) {
+  $children = array();
+  foreach ($employees as $employee) {
+    if ($employee['id_administrador'] == $parentId) {
+   
+
+$cedula = str_pad($employee['cedula'], 9, "0", STR_PAD_LEFT);
+
+            $imageUrl = "http://ccschu14.pdvsa.com/PHOTOS/" . $cedula . ".jpg";
+
+      /*$defaultImageUrl = "..fuente/vistas/img/files/default/anonymous.png";*/
+      $child = array(
+        'title' => 'APROBADOR: ' . "<br>" . $employee['nombre'] . "<br>" . 'C.I: ' . $employee['cedula'] . " " . ' (01 ' . $employee['tipoNomina'] . ')',
+        'name' => '<img class="avatar" src="' . htmlspecialchars($imageUrl) . '" /> ' . $employee['cargo'],
+        
+
+        
+      );
+      $child['children'] = buildOrgChart($employees, $employee['cedula']);
+      $children[] = $child;
+    }
+  }
+  return $children;
+}
+
+
+$query = $db->query("SELECT * FROM trabajadores");
+$employees = $query->fetchAll();
+
+
+$data = array(
+  'name' => 'Organigrama',
+  'title' => 'Organigrama',
+  
+  'children' => buildOrgChart($employees)
+);
+
+
+header('Content-Type: application/json');
+echo json_encode($data);
+
+
+
+
+/*<?php
+class Conexion {
+  public static function conectar() {
+    $link = new PDO("mysql:host=localhost;dbname=gestion_tp", "root", "raida2028");
+    $link->exec("set names utf8");
+    return $link;
+  }
+}
+
+$db = Conexion::conectar();
+
+$query = $db->query("SELECT `id`, `cedula`, `nombre`, `cargo`, `id_administrador` FROM `trabajadores` WHERE `estado` = 1");
+$employees = $query->fetchAll();
+
+function buildOrgChart($employees, $parentId = 0) {
+  $children = array();
+  foreach ($employees as $employee) {
+    if ($employee['id_administrador'] == $parentId) {
+      $children[] = array(
+        'id' => $employee['id'],
+        'name' => $employee['nombre'],
+        'title' => $employee['cargo'],
+        'children' => buildOrgChart($employees, $employee['id'])
+      );
+    }
+  }
+  return $children;
+}
+
+// Build the org chart data structure
+$data = array(
+  'name' => 'Organigrama',
+  'title' => 'Organigrama',
+  'children' => buildOrgChart($employees)
+);
+
+// Output the data structure in JSON format
+header('Content-Type: application/json');
+echo json_encode($data);
+?>*/
+?>

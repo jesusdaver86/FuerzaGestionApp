@@ -1,0 +1,36 @@
+{
+    "name": "Fuerza Gestión App",
+    "short_name": "FuerzaApp",
+    "description": "Aplicación para gestión de fuerza de ventas y equipos comerciales.",
+    "start_url": "/fuente/index.php",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#343a40",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/fuente/assets/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/fuente/assets/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "./assets/screenshots/screenshot1.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "label": "Vista principal de la app"
+        }
+    ],
+    "related_applications": [],
+    "prefer_related_applications": false,
+    "scope": "/",
+    "lang": "es",
+    "dir": "ltr"
+}

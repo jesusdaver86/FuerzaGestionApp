@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Organigrama</title>
+  <link rel="icon" href="./OrgChart/demo/img/logo.png">
+  <link rel="stylesheet" href="./OrgChart/dist/css/jquery.orgchart.css">
+  <link rel="stylesheet" href="./OrgChart/demo/css/style.css">
+  
+  <style>
+    .orgchart {
+      background: #fff;
+    }
+
+    .orgchart .node {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      word-wrap: break-word;
+      margin: 20px;
+      font-size: 16px;
+    }
+
+    .orgchart .node.level-1 {
+      background-color: #f0f0f0;
+    }
+
+    .orgchart .node.level-2 {
+      background-color: #e0e0e0;
+    }
+
+    .orgchart .node .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 30px;
+      float: left;
+      margin: 5px;
+    }
+
+    .orgchart .node .title {
+      font-weight: bold;
+      font-size: 12px;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: clip;
+      height: 95px;
+      width: 222px;
+      background-color: #fff;
+      color: red;
+      border: 1px solid #ccc;
+    }
+
+    .orgchart .node .content {
+      font-weight: bold;
+      font-size: 10px;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: clip;
+      height: 130px;
+      width: 222px;
+      color: black;
+      background-color: #66ff33;
+      border: 1px solid #ccc;
+    }
+
+    #chart-container {
+      height: 800px;
+      border: 1px solid #aaa;
+      margin: 0.5rem;
+      overflow: auto;
+      text-align: center;
+    }
+
+    #edit-panel {
+      margin: 0.5rem;
+      padding: 20px;
+      text-align: center;
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #selected-node, #key-word {
+      width: 50%;
+      height: 30px;
+      padding: 5px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #3e8e41;
+    }
+
+    button:active {
+      background-color: #3e8e41;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    button:focus {
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="chart-container"></div>
+  <button type="button" class="oc-recentrar-btn">Recentrar</button>
+
+  <div id="edit-panel" class="view-state">
+    <input type="text" id="selected-node" placeholder="Por favor seleccione el nodo" readonly>
+    <button type="button" id="btn-report-path">Dibujar ruta del informe</button>
+    <button type="button" id="btn-delete-nodes">Eliminar</button>
+    <button type="button" id="btn-reset">Reiniciar</button>
+  </div>
+
+  <div id="edit-panel" class="view-state">
+    <input type="text" id="key-word" placeholder="Filtrar nodos">
+    <button type="button" id="btn-filter-node">Filtrar</button>
+    <button type="button" id="btn-cancel">Cancelar </button>
+  </div>
+
+  <script type="text/javascript" src="./OrgChart/dist/js/jquery.min.js"></script>
+  <script type="text/javascript" src="./OrgChart/dist/js/jquery.orgchart.js"></script>
+  <script type="text/javascript" src="./OrgChart/dist/js/another-library.js"></script>
+  <script type="text/javascript" src="./OrgChart/dist/js/yet-another-library.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $.ajax({
+        url: 'data.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function(data) {
+          var oc = $('#chart-container').orgchart({
+            'data': data,
+            'nodeContent': 'title',
+            'visibleLevel': 2,
+            'verticalLevel': 16,
+            'exportButton': true,
+            'exportFilename': 'Organigrama',
+            'exportFileextension': 'png',
+            'pan': true,
+            'zoom': true,
+            'createNode': function ($node, data) {
+              $node.find('.title').append('<div class="avatar"><img src="path/to/image.jpg" alt=""></div>');
+            }
+          });
+
+          // Previene el movimiento táctil
+          oc.$chartContainer.on('touchmove', function(event) {
+            event.preventDefault();
+          });
+
+          // Manejo clic en nodos para seleccionar
+          oc.$chartContainer.on('click', '.node', function() {
+            var $this = $(this);
+            $('#selected-node').val($this.find('.title').text()).data('node', $this);
+          });
+
+          // Manejo clic fuera de nodos para deseleccionar
+          oc.$chartContainer.on('click', '.orgchart', function(event) {
+            if (!$(event.target).closest('.node').length) {
+              $('#selected-node').val('');
+            }
+          });
+
+          // Manejo exclusivo de clic en iconos de colapso izquierdo y derecho
+          oc.$chart.on('click', '.horizontalEdge.rightEdge', function(event) {
+            event.stopPropagation();
+
+            var $node = $(this).closest('.node');
+            var $siblingsContainer = $node.siblings('.nodes');
+            if ($siblingsContainer.length === 0) return;
+
+            var $allSiblings = $siblingsContainer.children('.node');
+            var indexCurrent = $allSiblings.index($node);
+
+            // Los nodos a la derecha son los que tienen índice > indexCurrent
+            var $rightNodes = $allSiblings.filter(function(i) {
+              return i > indexCurrent;
+            });
+
+            if ($rightNodes.filter('.hidden').length === $rightNodes.length) {
+              // Si todos están ocultos, los mostramos
+              $rightNodes.removeClass('hidden slide-up slide-right slide-left');
+              $node.removeClass('isChildrenCollapsed');
+            } else {
+              // Ocultamos solo los nodos a la derecha
+              $rightNodes.addClass('hidden');
+              $node.addClass('isChildrenCollapsed');
+            }
+          });
+
+          oc.$chart.on('click', '.horizontalEdge.leftEdge', function(event) {
+            event.stopPropagation();
+
+            var $node = $(this).closest('.node');
+            var $siblingsContainer = $node.siblings('.nodes');
+            if ($siblingsContainer.length === 0) return;
+
+            var $allSiblings = $siblingsContainer.children('.node');
+            var indexCurrent = $allSiblings.index($node);
+
+            // Los nodos a la izquierda son los que tienen índice < indexCurrent
+            var $leftNodes = $allSiblings.filter(function(i) {
+              return i < indexCurrent;
+            });
+
+            if ($leftNodes.filter('.hidden').length === $leftNodes.length) {
+              // Si todos están ocultos, los mostramos
+              $leftNodes.removeClass('hidden slide-up slide-right slide-left');
+              $node.removeClass('isChildrenCollapsed');
+            } else {
+              // Ocultamos solo los nodos a la izquierda
+              $leftNodes.addClass('hidden');
+              $node.addClass('isChildrenCollapsed');
+            }
+          });
+
+          // Dibujar ruta del informe
+          $('#btn-report-path').on('click', function() {
+            var $selected = $('#chart-container').find('.node.focused');
+            if ($selected.length) {
+              $selected.parents('.nodes').children(':has(.focused)').find('.node:first').each(function() {
+                if (!$(this).find('.horizontalEdge:first').closest('.node').parent().siblings().is('.hidden')) {
+                  $(this).find('.horizontalEdge:first').trigger('click');
+                }
+              });
+              $(this).prop('disabled', true);
+            } else {
+              alert('Por favor seleccione el nodo primero');
+            }
+          });
+
+          // Reiniciar la gráfica
+          $('#btn-reset').on('click', function() {
+            oc.$chart.find('.hidden').removeClass('hidden')
+              .end().find('.slide-up, .slide-right, .slide-left, .focused')
+              .removeClass('slide-up slide-right slide-left focused');
+            oc.$chart.find('.isCollapsedSibling, .isChildrenCollapsed, .isSiblingsCollapsed')
+              .removeClass('isCollapsedSibling isChildrenCollapsed isSiblingsCollapsed');
+            $('#btn-report-path').prop('disabled', false);
+            $('#selected-node').val('');
+          });
+
+          // Filtrar nodos
+          $('#btn-filter-node').on('click', function() {
+            filterNodes($('#key-word').val());
+          });
+
+          $('#btn-cancel').on('click', function() {
+            clearFilterResult();
+          });
+
+          $('#key-word').on('keyup', function(event) {
+            if (event.which === 13) {
+              filterNodes(this.value);
+            } else if (event.which === 8 && this.value.length === 0) {
+              clearFilterResult();
+            }
+          });
+
+          // Obtener un ID único
+          var getId = function() {
+            return (new Date().getTime()) * 1000 + Math.floor(Math.random() * 1001);
+          };
+
+          // Cambiar estado de la gráfica
+          $('input[name="chart-state"]').on('click', function() {
+            $('.orgchart').toggleClass('edit-state', this.value !== 'view');
+            $('#edit-panel').toggleClass('edit-state', this.value === 'view');
+            if ($(this).val() === 'edit') {
+              $('.orgchart').find('.hidden').removeClass('hidden')
+                .end().find('.hierarchy').removeClass('isCollapsedDescendant isChildrenCollapsed isSiblingsCollapsed isCollapsedSibling')
+                .find('.node').removeClass('slide-up slide-down slide-right slide-left');
+            } else {
+              $('#btn-reset').trigger('click');
+            }
+          });
+
+          // Botón recenter
+          $('.oc-recentrar-btn').click(function() {
+            oc.$chart.css('transform', '');
+          });
+          
+          // Función para filtrar nodos
+          function filterNodes(keyWord) {
+            if (!keyWord.length) {
+              alert('Por favor ingrese una palabra clave');
+              return;
+            }
+            var $chart = $('.orgchart');
+            $chart.addClass('noncollapsable');
+            $chart.find('.node').removeClass('matched retained');
+            $chart.find('.node').filter(function() {
+              return $(this).text().toLowerCase().indexOf(keyWord.toLowerCase()) > -1;
+            }).addClass('matched')
+              .closest('.hierarchy').parents('.hierarchy').children('.node').addClass('retained');
+            $chart.find('.matched,.retained').each(function() {
+              $(this).removeClass('slide-up')
+                .closest('.nodes').removeClass('hidden')
+                .siblings('.hierarchy').removeClass('isChildrenCollapsed');
+            });
+            loopChart($chart.find('.hierarchy:first'));
+          }
+
+          // Función para limpiar resultados de filtro
+          function clearFilterResult() {
+            $('.orgchart').removeClass('noncollapsable')
+              .find('.node').removeClass('matched retained')
+              .end().find('.hidden, .isChildrenCollapsed').removeClass('hidden isChildrenCollapsed')
+              .end().find('.slide-up, .slide-left, .slide-right').removeClass('slide-up slide-right slide-left');
+          }
+
+          // Función para recorrer la gráfica
+          function loopChart($hierarchy) {
+            var $siblings = $hierarchy.children('.nodes').children('.hierarchy');
+            if ($siblings.length) {
+              $siblings.filter(':not(.hidden)').first().addClass('first-shown')
+                .end().last().addClass('last-shown');
+            }
+            $siblings.each(function() {
+              loopChart($(this));
+            });
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error("Error en la solicitud AJAX:", error);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

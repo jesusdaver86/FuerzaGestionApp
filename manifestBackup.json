@@ -1,0 +1,36 @@
+{
+  "name": "Fuerza Gestión App",
+  "short_name": "FuerzaApp",
+  "description": "Aplicación para gestión de fuerza de ventas y equipos comerciales.",
+  "start_url": "/fuente/index.php",  // Página de inicio (ajusta según tu app)
+  "display": "standalone",    // Modo de visualización (standalone, fullscreen, minimal-ui)
+  "background_color": "#ffffff",  // Color de fondo del splash screen
+  "theme_color": "#343a40",       // Color del tema (navbar, barra de estado)
+  "orientation": "portrait",      // Orientación preferida (portrait, landscape, any)
+  "icons": [
+    {
+      "src": "/fuente/assets/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"   // Para adaptarse a diferentes formas
+    },
+    {
+      "src": "/fuente/assets/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  /*"screenshots": [  // Opcional, pero útil para tiendas de apps
+    {
+      "src": "/fuente/assets/screenshots/screenshot1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Vista principal de la app"
+    }
+  ],*/
+  "related_applications": [],  // Si tienes app nativa, puedes enlazarla
+  "prefer_related_applications": false,  // Priorizar PWA sobre app nativa
+  "scope": "/",  // Ámbito de la PWA (evita que funcione fuera del directorio)
+  "lang": "es",  // Idioma principal
+  "dir": "ltr"   // Dirección del texto (ltr: izquierda a derecha)
+}

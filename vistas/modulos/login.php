@@ -27,13 +27,13 @@
 }
 
 @keyframes fadeInUp {
-  from { 
-    opacity: 0; 
+  from {
+    opacity: 0;
     transform: translateY(25px);
   }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -260,11 +260,11 @@
     width: 90%;
     max-width: 420px;
   }
-  
+
   .login-box-body {
     padding: 30px;
   }
-  
+
   .login-logo img {
     width: 170px;
   }
@@ -275,29 +275,29 @@
     padding: 25px;
     border-radius: 10px;
   }
-  
+
 @media (max-width: 480px) {
   .form-control {
     padding-left: 45px;
   }
-  
+
   .form-control-feedback {
     left: 15px;
     font-size: 14px;
   }
-  
+
   .login-box-msg {
     font-size: 17px;
   }
-  
+
   #login-btn {
     padding: 14px 25px;
   }
-  
+
   .login-logo img {
     width: 150px;
   }
-  
+
   .alert {
     padding: 12px 18px;
     font-size: 13px;
@@ -316,10 +316,10 @@
 
   <div class="login-box-body">
     <p class="login-box-msg">Ingresar al sistema</p>
-    
+
     <form id="loginForm" method="post">
    <input type="hidden" name="csrf_token" value="<?= isset($_SESSION['csrf_token']) ? $_SESSION['csrf_token'] : '' ?>">
-      
+
  <div class="form-group has-feedback">
   <input type="text" class="form-control" placeholder="Usuario" name="ingUsuario" id="ingUsuario" required>
   <span class="glyphicon glyphicon-user form-control-feedback"></span>
@@ -333,10 +333,10 @@
       <div class="text-center">
         <button type="submit" id="login-btn" class="btn btn-primary btn-flat">Ingresar</button>
       </div>
-      
+
       <div id="login-message"></div>
     </form>
-    
+
     <?php
     // Mantén esta línea COMENTADA para el enfoque AJAX
    // $login = new ControladorUsuarios();
@@ -345,18 +345,12 @@
   </div>
 </div>
 
-<!-- Incluir jQuery (si no lo tienes) -->
-
-
-<!--script src="https://code.jquery.com/jquery-3.6.0.min.js"></script-->
-<!--script src="vistas/bower_components/jquery/dist/jquery.min.js" defer></script-->
-
 <!-- Script AJAX mejorado -->
  <script>
     $(document).ready(function() {
       $('#loginForm').on('submit', function(e) {
         e.preventDefault();
-        
+
         // Mostrar carga
         $('#login-message').html(`
           <div class="alert alert-info">
@@ -364,11 +358,11 @@
             <span>Verificando credenciales...</span>
           </div>
         `);
-        
+
         // Deshabilitar el botón
         var $submitBtn = $('#login-btn');
         $submitBtn.prop('disabled', true);
-        
+
         $.ajax({
           url: 'ajax/login.ajax.php',
           type: 'POST',

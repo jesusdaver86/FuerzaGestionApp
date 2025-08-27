@@ -6,7 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>Fuerza Gestion APP</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  
+
   <!-- Meta Tags de Seguridad y PWA -->
   <meta name="theme-color" content="#343a40">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -45,7 +45,7 @@
   </script>
 
   <!-- Scripts Críticos con defer -->
-  <script src="node_modules/jquery/dist/jquery.min.js" defer></script>
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
 
   <script src="vistas/bower_components/bootstrap/dist/js/bootstrap.min.js" defer></script>
   <script src="vistas/dist/js/adminlte.min.js" defer></script>
@@ -68,32 +68,32 @@ if ($rutaActual === 'salir') {
 if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 ?>
   <div class="wrapper">
-    <?php 
+    <?php
     include "modulos/cabezote.php";
     include "modulos/menu.php";
-    
+
     // Sistema de enrutamiento mejorado
     $ruta = $_GET["ruta"] ?? 'inicio';
     $rutasPermitidas = [
       "inicio", "usuarios", "trabajadores", "elFinder", "operadores",
-      "origenes", "destinos", "marcas", "unidades", "pasajeros", 
+      "origenes", "destinos", "marcas", "unidades", "pasajeros",
       "reportes", "reportesp", "salir", "login"
     ];
-    
+
     $archivo = in_array($ruta, $rutasPermitidas) ? "modulos/$ruta.php" : "modulos/404.php";
-    
+
     // Verificar si el archivo existe antes de incluirlo
     if (file_exists($archivo)) {
         include $archivo;
     } else {
         include "modulos/404.php";
     }
-    
+
     include "modulos/footer.php";
     ?>
   </div>
 <?php } else { ?>
-  <?php 
+  <?php
   // Si la ruta es login, mostrar login, sino redirigir
   if ($rutaActual === 'login') {
       include "modulos/login.php";
@@ -121,7 +121,7 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 <!-- Carga modular de scripts según la página -->
 <script type="module">
   import { cargarScripts } from './vistas/js/module-loader.js';
-  
+
   const paginaActual = '<?= $ruta ?? 'inicio' ?>';
   const scriptsNecesarios = {
     'usuarios': ['vistas/usuarios.js'],
@@ -156,8 +156,8 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/fuente/service-worker.js', { 
-        scope: '/fuente/' 
+      navigator.serviceWorker.register('/fuente/service-worker.js', {
+        scope: '/fuente/'
       }).then(registration => {
         console.log('SW registrado:', registration.scope);
       }).catch(error => {

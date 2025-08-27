@@ -1,31 +1,101 @@
-      - name: Process ZIP files
-        if: env.has_zips == 'true'
+name: Unzip and Commit Files (Robust, Recursive, Safe)
+
+on:
+  push:
+    paths:
+      - '**/*.zip'
+      - '**/*.z*' # Captura archivos .z01, .z02, etc.
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  unzip-and-commit:
+    runs-on: ubuntu-latest
+    outputs:
+      files_changed: ${{ steps.detect_changes.outputs.changed }}
+      pr_created: ${{ steps.create_pr.outputs.pr_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Buscar archivos ZIP
+        id: find_zips
         run: |
-          MAIN_ZIP="${{ env.main_zip }}"
-          BASE_NAME="${MAIN_ZIP%.*}"
-          
-          # Verifica si hay archivos divididos
-          if ls ${BASE_NAME}.z?? 2>/dev/null; then
-            echo "Detectados archivos ZIP divididos - combinando..."
-            zip -s 0 "$MAIN_ZIP" --out "combined_$MAIN_ZIP"
-            echo "Descomprimiendo combined_$MAIN_ZIP..."
-            if unzip -v "combined_$MAIN_ZIP" -d .; then
-              echo "Descompresión exitosa."
-            else
-              echo "Error al descomprimir combined_$MAIN_ZIP"
-              exit 1
-            fi
-            rm -f "combined_$MAIN_ZIP" ${BASE_NAME}.z??
-          else
-            echo "Procesando ZIP normal..."
-            echo "Descomprimiendo $MAIN_ZIP..."
-            if unzip -v "$MAIN_ZIP" -d .; then
-              echo "Descompresión exitosa."
-            else
-              echo "Error al descomprimir $MAIN_ZIP"
-              exit 1
-            fi
+          set -euo pipefail
+          ZIP_LIST=$(find . -type f -name "*.zip")
+          if [ -z "$ZIP_LIST" ]; then
+            echo "No se encontraron archivos ZIP."
+            echo "found_zips=false" >> $GITHUB_ENV
+            exit 0
           fi
-          
-          # Limpieza final
-          rm -f "$MAIN_ZIP"
+          echo "ZIPs encontrados:"
+          echo "$ZIP_LIST"
+          echo "$ZIP_LIST" > zips.txt
+          echo "found_zips=true" >> $GITHUB_ENV
+
+      - name: Procesar archivos ZIP encontrados
+        if: env.found_zips == 'true'
+        run: |
+          set -euo pipefail
+          while IFS= read -r MAIN_ZIP; do
+            [ -z "$MAIN_ZIP" ] && continue
+            echo "Procesando: $MAIN_ZIP"
+            DIR_PATH=$(dirname "$MAIN_ZIP")
+            BASE_NAME="${MAIN_ZIP%.*}"
+            # Detectar ZIPs divididos
+            SPLIT_PARTS=$(find "$DIR_PATH" -maxdepth 1 -type f -name "$(basename "$BASE_NAME").z??" | sort)
+            if [ -n "$SPLIT_PARTS" ]; then
+              echo "ZIP dividido detectado:"
+              echo "$SPLIT_PARTS"
+              zip -s 0 "$MAIN_ZIP" --out "${DIR_PATH}/combined.zip"
+              echo "Extrayendo ${DIR_PATH}/combined.zip..."
+              unzip -o "${DIR_PATH}/combined.zip" -d "$DIR_PATH"
+              rm -f "${DIR_PATH}/combined.zip" $SPLIT_PARTS
+            else
+              echo "ZIP normal detectado."
+              unzip -o "$MAIN_ZIP" -d "$DIR_PATH"
+            fi
+            rm -f "$MAIN_ZIP"
+          done < zips.txt
+
+      - name: Detectar cambios
+        id: detect_changes
+        run: |
+          git add -A
+          if ! git diff --cached --quiet; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit y Push cambios
+        if: steps.detect_changes.outputs.changed == 'true'
+        id: commit_push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git commit -m "Auto-commit: Archivos descomprimidos [skip ci]" || true
+          echo "Intentando hacer push..."
+          if git push origin HEAD; then
+            echo "Push exitoso."
+            echo "push_ok=true" >> $GITHUB_ENV
+          else
+            echo "Push fallido, se intentará crear un Pull Request."
+            echo "push_ok=false" >> $GITHUB_ENV
+          fi
+
+      - name: Crear Pull Request si push falla
+        if: steps.detect_changes.outputs.changed == 'true' && env.push_ok == 'false'
+        id: create_pr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Auto-commit: Archivos descomprimidos [skip ci]"
+          title: "Auto PR: Archivos descomprimidos"
+          body: "Este Pull Request fue creado automáticamente porque el push directo falló tras descomprimir ZIPs."
+          branch: auto/unzip-files

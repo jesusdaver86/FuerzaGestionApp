@@ -1,14 +1,3 @@
-<?php
-// ESTO PRIMERO
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-
-if (!isset($_SESSION["iniciarSesion"]) || $_SESSION["iniciarSesion"] != "ok") {
-    header("Location: login");
-    exit();
-}
-?>
 <div class="content-wrapper">
   <section class="content-header">
     <?php
@@ -33,7 +22,7 @@ if (!isset($_SESSION["iniciarSesion"]) || $_SESSION["iniciarSesion"] != "ok") {
         <button class="btn btn-success" data-toggle="modal" data-target="#modalImportData">
           Importar masivamente
         </button>
-        
+
         <div class="box-tools pull-right">
           <button class="btn btn-success" id="exportarBtn">
             <i class="fa fa-file-excel-o"></i>
@@ -71,10 +60,10 @@ if (!isset($_SESSION["iniciarSesion"]) || $_SESSION["iniciarSesion"] != "ok") {
   </section>
 
   <!-- Modales -->
-  <?php 
+  <?php
   include 'modales/importar.php';
   include 'modales/agregar_editar.php';
-  include 'modales/documentos.php'; 
+  include 'modales/documentos.php';
   ?>
 </div>
   <!-- Scripts Críticos con defer -->
@@ -93,9 +82,9 @@ $(document).ready(function() {
     },
     columns: [
       { data: 'id' },
-      { 
+      {
         data: 'foto',
-        render: (data, type, row) => renderFoto(row) 
+        render: (data, type, row) => renderFoto(row)
       },
       { data: 'nombre' },
       { data: 'cedula' },
@@ -103,33 +92,33 @@ $(document).ready(function() {
       { data: 'direccion' },
       { data: 'cargo' },
       { data: 'segundaLineaGerencia' },
-      { 
+      {
         data: 'fotoDocumento',
-        render: (data, type, row) => renderDocumento(row) 
+        render: (data, type, row) => renderDocumento(row)
       },
-      { 
+      {
         data: 'fotoCarnet',
-        render: data => renderArchivo(data) 
+        render: data => renderArchivo(data)
       },
-      { 
+      {
         data: 'cartaMedica',
-        render: (data, type, row) => renderDocumentoConFecha(row, 'CartaMedica') 
+        render: (data, type, row) => renderDocumentoConFecha(row, 'CartaMedica')
       },
-      { 
+      {
         data: 'certificadoFlotaLiviana',
-        render: (data, type, row) => renderDocumentoConFecha(row, 'CertificadoFlotaLiviana') 
+        render: (data, type, row) => renderDocumentoConFecha(row, 'CertificadoFlotaLiviana')
       },
-      { 
+      {
         data: 'certificadoFlotaPesada',
-        render: (data, type, row) => renderDocumentoConFecha(row, 'CertificadoFlotaPesada') 
+        render: (data, type, row) => renderDocumentoConFecha(row, 'CertificadoFlotaPesada')
       },
-      { 
+      {
         data: 'nroLicencia',
-        render: (data, type, row) => renderDocumentoConFecha(row, 'Licencia') 
+        render: (data, type, row) => renderDocumentoConFecha(row, 'Licencia')
       },
       { data: 'tipoNomina' },
       { data: 'created_at' },
-      { 
+      {
         data: 'acciones',
         render: (data, type, row) => `
           <button class="btn btn-warning btn Editar" data-id="${row.id}">
@@ -165,29 +154,29 @@ $(document).ready(function() {
     const cedula = row.cedula.padStart(9, '0');
     const imageUrl = `http://ccschu14.pdvsa.com/PHOTOS/${cedula}.jpg`;
     const defaultImage = 'vistas/img/files/default/anonymous.png';
-    
+
     return `
       <a href="${imageUrl}" data-lightbox="image-gallery">
-        <img src="${imageUrl}" class="img-thumbnail" 
+        <img src="${imageUrl}" class="img-thumbnail"
              width="40px" onerror="this.src='${defaultImage}'">
       </a>
     `;
   };
 
-  const renderDocumento = (data) => 
-    data ? `<a href="${data}" target="_blank">Ver documento</a>` : 
+  const renderDocumento = (data) =>
+    data ? `<a href="${data}" target="_blank">Ver documento</a>` :
     '<span class="label label-danger">No disponible</span>';
 
-  const renderArchivo = (data) => 
-    data ? `<a href="${data}" target="_blank">Ver documento</a>` : 
+  const renderArchivo = (data) =>
+    data ? `<a href="${data}" target="_blank">Ver documento</a>` :
     '<span class="label label-danger">No disponible</span>';
 
   const renderDocumentoConFecha = (row, tipo) => {
     const fechaField = `fechaVencimiento${tipo}`;
     const fecha = row[fechaField];
-    
+
     if (!fecha) return '<span class="label label-danger">No disponible</span>';
-    
+
     const clase = getClaseVencimiento(fecha);
     return `
       ${row[`foto${tipo}`] ? `<a href="${row[`foto${tipo}`]}" target="_blank">Ver</a><br>` : ''}

@@ -1,6 +1,6 @@
 <?php
 // modulos/salir.php
-require_once "../controladores/usuarios.controlador.php";
+require_once "controladores/usuarios.controlador.php";
 
 // Cerrar sesión usando el controlador
 ControladorUsuarios::ctrCerrarSesion();

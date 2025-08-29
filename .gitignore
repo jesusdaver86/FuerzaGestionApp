@@ -2,6 +2,9 @@
 vendor/
 composer.lock
 
+# Node
+node_modules/
+
 # Log files
 *.log
 

@@ -5,12 +5,12 @@ ini_set('display_errors', 1);
 // --- Manejo de sesión seguro y centralizado ---
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
-    
+
     // Generar token CSRF solo si no existe o la sesión es nueva
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-    
+
     // Inicializar variable de sesión si no existe
     $_SESSION['iniciarSesion'] = $_SESSION['iniciarSesion'] ?? '';
 }
@@ -18,10 +18,10 @@ if (session_status() == PHP_SESSION_NONE) {
 // --- Manejo de logout ---
 if (isset($_GET['ruta']) && $_GET['ruta'] === 'salir') {
     require_once "controladores/usuarios.controlador.php";
-    
+
     // Usar el método del controlador para cerrar sesión
     ControladorUsuarios::ctrCerrarSesion();
-    
+
     // Redirigir al login
     header("Location: ?ruta=login");
     exit();
@@ -47,7 +47,7 @@ require_once "modelos/marcas.modelo.php";
 require_once "modelos/unidades.modelo.php";
 require_once "modelos/pasajeros.modelo.php";
 
-require_once "extensiones/vendor/autoload.php";
+require_once "vendor/autoload.php";
 
 // --- Inicializar aplicación ---
 $plantilla = new ControladorPlantilla();

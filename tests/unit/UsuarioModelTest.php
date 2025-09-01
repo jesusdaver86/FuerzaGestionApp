@@ -26,7 +26,7 @@ class UsuarioModelTest extends TestCase
             self::$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             // 2. Pass this PDO instance to the Conexion class for methods under test to use
-            \Conexion::setTestPdoInstance(self::$pdo);
+            \Modelos\Conexion::setTestPdoInstance(self::$pdo);
 
             // 3. Create the schema in the shared PDO instance
             $sql = "CREATE TABLE IF NOT EXISTS " . self::$tableName . " (

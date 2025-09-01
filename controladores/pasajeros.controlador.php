@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 use Modelos\ModeloPasajeros;*/
 date_default_timezone_set("Etc/GMT+4");
 setlocale(LC_TIME, "spanish");
-require_once "modelos/conexion.php";
+require_once __DIR__ . "/../modelos/conexion.php";
 use Modelos\Conexion;
 class ControladorPasajeros{
 	
@@ -838,6 +838,7 @@ exit;
 
 
 	
+
 
 
 

@@ -99,13 +99,13 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
       "reportes", "reportesp", "salir"
     ];
 
-    $archivo = in_array($ruta, $rutasPermitidas) ? "modulos/$ruta.php" : "modulos/404.php";
+    $archivo = in_array($ruta, $rutasPermitidas) ? "vistas/modulos/$ruta.php" : "vistas/modulos/404.php";
 
     // Verificar si el archivo existe antes de incluirlo
     if (file_exists($archivo)) {
         include $archivo;
     } else {
-        include "modulos/404.php";
+        include "vistas/modulos/404.php";
     }
 
     include "modulos/footer.php";

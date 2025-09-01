@@ -64,6 +64,12 @@ if ($rutaActual === 'salir') {
     exit();
 }
 
+// Redirigir si el usuario logueado intenta acceder al login
+if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] === "ok" && $rutaActual === 'login') {
+    header('Location: inicio');
+    exit();
+}
+
 // Verificar sesión para todas las demás rutas
 if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 ?>
@@ -77,7 +83,7 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
     $rutasPermitidas = [
       "inicio", "usuarios", "trabajadores", "elFinder", "operadores",
       "origenes", "destinos", "marcas", "unidades", "pasajeros",
-      "reportes", "reportesp", "salir", "login"
+      "reportes", "reportesp", "salir"
     ];
 
     $archivo = in_array($ruta, $rutasPermitidas) ? "modulos/$ruta.php" : "modulos/404.php";

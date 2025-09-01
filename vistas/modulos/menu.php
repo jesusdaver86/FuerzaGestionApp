@@ -183,7 +183,6 @@
 
 
 
-
 			<li>
 
 				<a href="index.php?ruta=unidades">
@@ -219,7 +218,7 @@
 
 			echo '<li>
 
-				<a href="pasajeros">
+				<a href="index.php?ruta=pasajeros">
 
 					<i class="fa fa-users"></i>
 					<span>Pasajeros</span>
@@ -252,7 +251,7 @@
 					
 					<li>
 
-						<a href="ventas">
+						<a href="index.php?ruta=ventas">
 							
 							<i class="fa fa-circle-o"></i>
 							<span>Administrar despachos</span>
@@ -263,7 +262,7 @@
 
 					<li>
 
-						<a href="crear-venta">
+						<a href="index.php?ruta=crear-venta">
 							
 							<i class="fa fa-circle-o"></i>
 							<span>Crear despacho</span>
@@ -276,7 +275,7 @@
 
 					echo '<li>
 
-						<a href="reportes">
+						<a href="index.php?ruta=reportes">
 							
 							<i class="fa fa-circle-o"></i>
 							<span>Reporte de despachos</span>
@@ -286,7 +285,7 @@
 					</li>
 					<li>
 
-						<a href="reportesp">
+						<a href="index.php?ruta=reportesp">
 							
 							<i class="fa fa-circle-o"></i>
 							<span>Reporte de unidades</span>

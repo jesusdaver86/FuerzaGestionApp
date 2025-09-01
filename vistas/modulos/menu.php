@@ -10,7 +10,7 @@
 
 			echo '<li class="active">
 
-				<a href="inicio">
+				<a href="index.php?ruta=inicio">
 
 					<i class="fa fa-home"></i>
 					<span>Inicio</span>
@@ -21,7 +21,7 @@
 
 			<li>
 
-				<a href="usuarios">
+				<a href="index.php?ruta=usuarios">
 
 					<i class="fa fa-user"></i>
 					<span>Usuarios</span>
@@ -36,7 +36,7 @@
 
 			echo '<li class="active">
 
-				<a href="trabajadores">
+				<a href="index.php?ruta=trabajadores">
 
 					<i class="fa fa-users"></i>
 					<span>Trabajadores</span>
@@ -70,7 +70,7 @@
 
 			echo '<li>
 
-				<a href="operadores">
+				<a href="index.php?ruta=operadores">
 
 					<i class="fa fa-cog"></i>
 					<span>Operadores</span>
@@ -86,7 +86,7 @@
 
 			<li>
 
-				<a href="marcas">
+				<a href="index.php?ruta=marcas">
 
 					<i class="fa fa-th"></i>
 					<span>Marcas</span>
@@ -120,7 +120,7 @@
 					
 					<li>
 
-						<a href="origenes">
+						<a href="index.php?ruta=origenes">
 							
 							<i class="fa fa-circle-o"></i>
 							<span>Administrar origenes</span>
@@ -131,7 +131,7 @@
 
 					<li>
 
-						<a href="destinos">
+						<a href="index.php?ruta=destinos">
 							
 							<i class="fa fa-circle-o"></i>
 							<span>Administrar destinos</span>
@@ -186,7 +186,7 @@
 
 			<li>
 
-				<a href="unidades">
+				<a href="index.php?ruta=unidades">
 
 					<i class="fa fa-bus"></i>
 					<span>Flota</span>
@@ -198,7 +198,7 @@
 
 			<li>
 
-				<a href="pasajeros">
+				<a href="index.php?ruta=pasajeros">
 
 					<i class="fa fa-users"></i>
 					<span>Pasajeros</span>

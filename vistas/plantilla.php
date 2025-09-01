@@ -143,7 +143,7 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 
   const paginaActual = '<?= $ruta ?? 'inicio' ?>';
   const scriptsNecesarios = {
-    'usuarios': ['vistas/usuarios.js'],
+    'usuarios': ['vistas/js/usuarios.js'],
     'trabajadores': ['vistas/js/trabajadores.js'],
     'operadores': ['vistas/js/operadores.js'],
     'origenes': ['vistas/js/origenes.js'],

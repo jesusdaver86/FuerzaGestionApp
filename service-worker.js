@@ -1,47 +1,60 @@
 // 1. Configuración básica
-const CACHE_NAME = 'fuerza-gestion-v1';
-const BASE_PATH = '/fuente/';  // Ajusta según tu estructura
+const CACHE_NAME = 'fuerza-gestion-v3'; // Incremented version
+const BASE_PATH = '/fuente/';
 
-// Archivos esenciales para cachear (rutas relativas a /fuente/)
-const ASSETS = [
+// No need to pre-cache everything, as the service worker will cache on the fly.
+const ASSETS_TO_PRECACHE = [
   BASE_PATH,
-  BASE_PATH + 'index.php',
-  BASE_PATH + 'assets/css/styles.css',
-  BASE_PATH + 'assets/js/app.js',
-  BASE_PATH + 'assets/icons/icon-192x192.png',
-  BASE_PATH + 'assets/icons/icon-512x512.png',
-  // Añade más rutas según necesites
+  BASE_PATH + 'index.php'
 ];
 
 // 2. Instalación: Cachear recursos esenciales
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
-      .catch(err => console.log('Error al cachear:', err))
+      .then((cache) => cache.addAll(ASSETS_TO_PRECACHE))
+      .catch(err => console.log('Error al precachear:', err))
   );
+  self.skipWaiting();
 });
 
-// 3. Estrategia: Cache First, luego red
+// 3. Estrategia: Network First for navigation, Cache First for assets
 self.addEventListener('fetch', (event) => {
   if (!event.request.url.startsWith('http')) return;
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((cachedResponse) => {
-        // Devuelve del cache si existe
-        if (cachedResponse) return cachedResponse;
-        
-        // Si no, haz petición a red
-        return fetch(event.request)
-          .then((response) => {
-            // Opcional: Cachear nuevas respuestas
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => cache.put(event.request, responseClone));
-            return response;
+  // Network First for navigation requests (HTML pages)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
           });
+          return response;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache First for other assets (CSS, JS, images)
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseToCache);
+        });
+        return response;
+      }).catch(error => {
+        console.error('Fetching asset failed:', error);
+        throw error;
       })
+    })
   );
 });
 

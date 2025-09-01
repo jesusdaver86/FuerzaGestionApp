@@ -1,3 +1,16 @@
+<?php
+// Iniciar la sesión si no está iniciada para acceder a $_SESSION
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Prevenir caché si la sesión está iniciada
+if (isset($_SESSION['iniciarSesion']) && $_SESSION['iniciarSesion'] == 'ok') {
+    header('Cache-Control: no-cache, no-store, must-revalidate'); // HTTP 1.1.
+    header('Pragma: no-cache'); // HTTP 1.0.
+    header('Expires: 0'); // Proxies.
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

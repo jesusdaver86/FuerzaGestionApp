@@ -6,7 +6,16 @@ date_default_timezone_set("Etc/GMT+4");
 setlocale(LC_TIME, "spanish");
 
 class Conexion {
+    private static $testPdoInstance = null;
+
+    public static function setTestPdoInstance(\PDO $pdo) {
+        self::$testPdoInstance = $pdo;
+    }
+
     public static function conectar() {
+        if (self::$testPdoInstance !== null) {
+            return self::$testPdoInstance;
+        }
         try {
             // Configuración sensible en variables de entorno
             $host = getenv('DB_HOST') ?: 'localhost';

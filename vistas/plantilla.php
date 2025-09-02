@@ -44,6 +44,9 @@ if (isset($_SESSION['iniciarSesion']) && $_SESSION['iniciarSesion'] == 'ok') {
   <link rel="stylesheet" href="vistas/dist/css/AdminLTE.min.css">
   <link rel="stylesheet" href="vistas/dist/css/skins/_all-skins.min.css">
 
+  <!-- Bootstrap Datepicker -->
+  <link rel="stylesheet" href="vistas/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css">
+
   <!-- CSS Secundario (Diferido) -->
   <link rel="preload" href="node_modules/sweetalert2/dist/sweetalert2.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="node_modules/sweetalert2/dist/sweetalert2.min.css"></noscript>
@@ -136,6 +139,10 @@ if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok") {
 <script src="vistas/Jcrop/dist/jcrop.js"></script>
 <script src="assets/lightbox2/dist/js/lightbox.min.js"></script>
 <script src="assets/js/d3.v7.js"></script>
+
+<!-- Bootstrap Datepicker -->
+<script src="vistas/bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.min.js"></script>
+<script src="vistas/bower_components/bootstrap-datepicker/dist/locales/bootstrap-datepicker.es.min.js"></script>
 
 <!-- Carga modular de scripts según la página -->
 <script type="module">
